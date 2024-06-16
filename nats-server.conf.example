@@ -1,0 +1,71 @@
+################################################################################################
+##################################### NATS CONFIG EXAMPLE ######################################
+###### For more details check: https://docs.nats.io/running-a-nats-service/configuration #######
+################################################################################################
+
+
+#General settings
+host: 0.0.0.0
+port: 4222
+
+# Various server level options
+# ...
+
+# The following sections are maps with a set of (nested) properties
+
+jetstream {
+    # Jetstream storage location, limits and encryption
+	store_dir: nats
+}
+
+tls {
+    # Configuration map for tls parameters used for client connections,
+    # routes and https monitoring connections.
+}
+
+gateway {
+    # Configuration map for gateway. Gateways are used to connected clusters.
+}
+
+leafnodes {
+    # Configuration map for leafnodes. LeafNodes are lightweight clusters.
+}
+
+mqtt {
+    # Configuration map for mqtt. Allow clients to connect via mqtt protocol.
+}
+
+websocket {
+    # Configuration map for websocket. Allow clients to connect via websockets.
+}
+
+accounts {
+    # List of accounts and user within accounts
+    # User may have an authorization and authentication section
+}
+
+authorization {
+    # User may have an authorization and authentication section
+    # This section is only useful when no accounts are defined
+}
+
+mappings {
+    # Subject mappings for default account
+    # When accounts are defined this section must be in the account map
+}
+
+resolver {
+    # Pointer to external Authentication/Authorization resolver
+    # There are multiple possible resolver type explained in their own chapters of this docuemntaion
+    # memory, nats-base, url ... more may be added in the future
+    # This parameter can be a value `MEMORY` for simple configuration
+    # or a map of properties for connecting to the resolver
+}
+
+resolver_tls {
+    # TLS configuration for an URL based resolver
+}
+
+resolver_preload {
+    # List of JWT tokens to be loaded at server start.
+}

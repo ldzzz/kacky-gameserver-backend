@@ -1,0 +1,53 @@
+services:
+  kacky_gsb:
+    container_name: kackyGSB
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+        - UNAME=${UNAME:-devUser}
+        - MARIADBVER=${MYSQL_VER:-11.4.2}
+    tty: true
+    environment:
+      - DB_USER=${DB_USER:-devUser}
+      - DB_USER_PW=${DB_USER_PW:-devpw}
+    volumes:
+      - ..:/workspace:cached
+    depends_on:
+      - kacky_db
+      - kacky_nats
+
+  kacky_nats:
+    image: nats:${NATS_VER:-2.10-alpine}
+    container_name: kackyNATS
+    volumes:
+      - ./nats-server.conf:/etc/nats/nats-server.conf:ro
+    ports:
+      - 4222:4222
+      - 8222:8222
+      - 6222:6222
+    depends_on:
+      - kacky_db
+
+  kacky_db:
+    image: mariadb:${MYSQL_VER:-11.4.2}
+    container_name: kackyDB
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PW:-rootpw}
+      MYSQL_USER: ${UNAME:-devUser}
+      MYSQL_PASSWORD: ${DB_USER_PW:-devpw}
+      MYSQL_DATABASE: ${DB_DATABASE:-devDB}
+    volumes:
+      - ${PWD}/.devcontainer/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    name: kacky-development-network
