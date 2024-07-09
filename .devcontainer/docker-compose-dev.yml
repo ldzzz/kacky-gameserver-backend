@@ -16,8 +16,10 @@ services:
     volumes:
       - ..:/workspace:cached
     depends_on:
-      - kacky_db
-      - kacky_nats
+      kacky_db:
+         condition: service_healthy
+      kacky_nats:
+        condition: service_healthy
 
   kacky_nats:
     image: nats:${NATS_VER:-2.10-alpine}
@@ -29,7 +31,8 @@ services:
       - 8222:8222
       - 6222:6222
     depends_on:
-      - kacky_db
+      kacky_db:
+        condition: service_healthy
 
   kacky_db:
     image: mariadb:${MYSQL_VER:-11.4.2}
@@ -40,7 +43,7 @@ services:
       MYSQL_PASSWORD: ${DB_USER_PW:-devpw}
       MYSQL_DATABASE: ${DB_DATABASE:-devDB}
     volumes:
-      - ${PWD}/.devcontainer/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${PWD}/.devcontainer/db-mock-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s

@@ -243,6 +243,12 @@ INSERT INTO maps (id, uuid, event_id, full_name, number, author, author_time) VA
 INSERT INTO maps (id, uuid, event_id, full_name, number, author, author_time) VALUES (40, "zNvVW_NnRdxDIQm6T6EbPDkYg20", 2, "Spring 2024 - 23", 23, "Nadeo", 23456);
 
 /*
+# debug maps (both games)
+*/
+INSERT INTO maps (id, uuid, event_id, full_name, number, author, author_time) VALUES (41, "EdbzfLXMS_aI_PjZCVaygQ", 1, "debugmap2", 2, "reaby", 23456);
+INSERT INTO maps (id, uuid, event_id, full_name, number, author, author_time) VALUES (42, "pdEB384l2w_r51Vz8T4txF8WJ7i", 2, "debugmap1", 1, "reaby", 23456);
+
+/*
 # karma votes mock
 */
 INSERT INTO karma_votes (map_id, player_id, vote) VALUES (1, 10, -1);

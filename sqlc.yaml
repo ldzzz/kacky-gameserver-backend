@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "db/query.sql"
+    schema: "db/schema.sql"
+    database:
+      uri: postgresql://${DB_USER}:${DB_USER_PW}@kackyDB:3306/${DB_DATABASE}
+    gen:
+      go:
+        package: "db"
+        out: "db"
+        emit_json_tags: true

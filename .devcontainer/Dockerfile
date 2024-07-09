@@ -25,6 +25,7 @@ RUN apt install -y libmariadb3 libmariadb-dev
 COPY src/go.mod .
 COPY src/go.sum .
 RUN go mod download
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # Cleanup
 RUN apt -y clean \
