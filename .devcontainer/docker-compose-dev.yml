@@ -10,22 +10,20 @@ services:
         - UNAME=${UNAME:-devUser}
         - MARIADBVER=${MYSQL_VER:-11.4.2}
     tty: true
-    environment:
-      - DB_USER=${DB_USER:-devUser}
-      - DB_USER_PW=${DB_USER_PW:-devpw}
+    env_file: ".env.dev"
     volumes:
-      - ..:/workspace:cached
+      - ..:/go/src/kacky-gameserver-backend:cached
     depends_on:
       kacky_db:
          condition: service_healthy
       kacky_nats:
-        condition: service_healthy
+        condition: service_started
 
   kacky_nats:
     image: nats:${NATS_VER:-2.10-alpine}
     container_name: kackyNATS
     volumes:
-      - ./nats-server.conf:/etc/nats/nats-server.conf:ro
+      - ./nats-dev-server.conf:/etc/nats/nats-server.conf:ro
     ports:
       - 4222:4222
       - 8222:8222
@@ -37,11 +35,7 @@ services:
   kacky_db:
     image: mariadb:${MYSQL_VER:-11.4.2}
     container_name: kackyDB
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PW:-rootpw}
-      MYSQL_USER: ${UNAME:-devUser}
-      MYSQL_PASSWORD: ${DB_USER_PW:-devpw}
-      MYSQL_DATABASE: ${DB_DATABASE:-devDB}
+    env_file: ".env.dev"
     volumes:
       - ${PWD}/.devcontainer/db-mock-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:

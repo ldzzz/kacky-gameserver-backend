@@ -4,7 +4,7 @@
 	"name": "kacky-server-backend",
 	"dockerComposeFile": "docker-compose-dev.yml",
 	"service": "kacky_gsb",
-	"workspaceFolder": "/workspace",
+	"workspaceFolder": "/go/src/kacky-gameserver-backend",
 	"shutdownAction": "stopCompose",
 	"features": {
 		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
@@ -15,12 +15,10 @@
         "vscode": {
             "extensions": [
                 "golang.go",
-                "eamodio.gitlens", // IDE Git information
                 "davidanson.vscode-markdownlint",
                 "ms-azuretools.vscode-docker", // Docker integration and linting
                 "shardulm94.trailing-spaces", // Show trailing spaces
                 "Gruntfuggly.todo-tree", // Highlights TODO comments
-                "bierner.emojisense", // Emoji sense for markdown
                 "stkb.rewrap", // rewrap comments after n characters on one line
                 "IBM.output-colorizer" // Colorize your output/test logs
             ],

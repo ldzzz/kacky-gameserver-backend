@@ -22,8 +22,11 @@ RUN ./mariadb_repo_setup \ --mariadb-server-version="mariadb-${MARIADBVER}"
 RUN apt install -y libmariadb3 libmariadb-dev
 
 # Install requirements
-COPY src/go.mod .
-COPY src/go.sum .
+RUN mkdir $GOPATH/src/kacky-gameserver-backend
+RUN chmod -R 777 $GOPATH
+WORKDIR /go/src/kacky-gameserver-backend
+COPY go.mod .
+COPY go.sum .
 RUN go mod download
 RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
@@ -34,8 +37,8 @@ RUN apt -y clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Change ownership to container created user
-RUN chown -R ${UNAME} . \
-    && chgrp -R ${UNAME} .
+RUN chown -R ${UNAME} $GOPATH \
+    && chgrp -R ${UNAME} $GOPATH
 
 # Switch to user
 USER ${UNAME}
