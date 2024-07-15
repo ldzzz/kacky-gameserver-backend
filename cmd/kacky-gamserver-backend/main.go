@@ -1,18 +1,27 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/ldzzz/kacky-gameserver-backend/config"
+	"github.com/nats-io/nats.go"
 )
+
+type Env struct {
+	cfg *config.Config
+	db  *sql.DB
+}
 
 func main() {
 	// load config environment variables
 	var cfg *config.Config
 	var err error
-	if cfg, err = config.ReadConfig(); err != nil {
+	if cfg, err = config.GetConfig(); err != nil {
 		fmt.Printf("Couldn't read configuration environment variables: %s\n", err)
 		os.Exit(1)
 	}
@@ -20,12 +29,72 @@ func main() {
 	// initialize Logging
 	config.InitLogging(cfg.Debug)
 	slog.Info("Initialized configuration & logging")
-	//slog.Debug("Environment variables loaded:", cfg)
+	slog.Debug("Environment variables loaded:", "Config", cfg.String())
 
-	// TODO: open connection to db
-	// TODO: open connection to NATS
-	// TODO: setup callbacks for all NATS channels
-	// TODO: define error handling ??
-	// TODO: write unit tests
-	// TODO: write integration tests
+	if err := Run(cfg); err != nil {
+		slog.Error("Something went wrong", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("Exiting..")
+
 }
+
+func Run(cfg *config.Config) error {
+	var err error
+
+	/*************************************NATS*************************************/
+	slog.Info("Initializing NATS connection")
+	var nc *nats.Conn
+	opts := nats.Options{
+		Url:            cfg.NATSHost,
+		Name:           "gsb",
+		AllowReconnect: true,
+		MaxReconnect:   -1,
+		Token:          cfg.NATSToken,
+	}
+
+	if nc, err = opts.Connect(); err != nil {
+		return err
+	}
+	defer nc.Close()
+	slog.Info(fmt.Sprintf("Connected to NATS server: %s:%d", cfg.NATSHost, cfg.NATSPort))
+	// TODO: setup callbacks for all NATS channelsn
+	/***********************************database***********************************/
+	slog.Info("Initializing database connection")
+	var db *sql.DB
+	dbcfg := mysql.Config{
+		User:                 cfg.DBUser,
+		Passwd:               cfg.DBPass,
+		Net:                  "tcp",
+		Addr:                 fmt.Sprintf("%s:%d", cfg.DBHost, cfg.DBPort),
+		DBName:               cfg.DBName,
+		CheckConnLiveness:    true,
+		AllowNativePasswords: true,
+	}
+
+	// Get a database handle.
+	if db, err = sql.Open("mysql", dbcfg.FormatDSN()); err != nil {
+		return err
+	}
+
+	// set connection pool to make sense
+	db.SetMaxOpenConns(32)
+	db.SetMaxIdleConns(32)
+	db.SetConnMaxLifetime(30 * time.Minute)
+
+	// ping database
+	if err := db.Ping(); err != nil {
+		return err
+	}
+
+	defer db.Close()
+	slog.Info(fmt.Sprintf("Connected to the database: %s@%s:%d", cfg.DBUser, cfg.DBHost, cfg.DBPort))
+	// Create an instance of Env containing the connection pool.
+	//env := &Env{cfg, db}
+
+	return nil
+}
+
+// TODO: define error handling ??
+// TODO: write unit tests
+// TODO: write integration tests

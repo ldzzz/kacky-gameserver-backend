@@ -31,7 +31,7 @@ func InitLogging(debug bool) {
 	slog.SetDefault(logger)
 }
 
-func ReadConfig() (*Config, error) {
+func GetConfig() (*Config, error) {
 	// load environment mapping
 	cfg := &Config{}
 	ctx := context.Background()
@@ -44,12 +44,18 @@ func ReadConfig() (*Config, error) {
 	return cfg, nil
 }
 
+func (cfg *Config) String() string {
+	return fmt.Sprintf("{NATSHost:%s, NATSToken:%s, DBHost: %s, DBPort: %d, DBUser: %s, DBPass: %s, Debug: %t}", cfg.NATSHost, cfg.NATSToken, cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.Debug)
+}
+
 type Config struct {
 	NATSHost  string `env:"NATS_ADDR, required"`
+	NATSPort  int    `env:"NATS_PORT, required"`
 	NATSToken string `env:"NATS_TOKEN, required"`
 	DBHost    string `env:"DB_ADDR, required"`
 	DBPort    int    `env:"DB_PORT, required"`
 	DBUser    string `env:"MYSQL_USER, required"`
-	DBUPass   string `env:"MYSQL_PASSWORD, required"`
+	DBPass    string `env:"MYSQL_PASSWORD, required"`
+	DBName    string `env:"MYSQL_DATABASE, required"`
 	Debug     bool   `env:"DEBUG, default=false"`
 }
