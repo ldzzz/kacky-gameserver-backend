@@ -2,11 +2,14 @@ package config
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
 
 	prettylog "github.com/ldzzz/kacky-gameserver-backend/utils/logging"
+	"github.com/nats-io/nats.go"
 	envconfig "github.com/sethvargo/go-envconfig"
 )
 
@@ -44,8 +47,9 @@ func GetConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func (cfg *Config) String() string {
-	return fmt.Sprintf("{NATSHost:%s, NATSToken:%s, DBHost: %s, DBPort: %d, DBUser: %s, DBPass: %s, Debug: %t}", cfg.NATSHost, cfg.NATSToken, cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.Debug)
+func (pc *Config) String() string {
+	s, _ := json.Marshal(pc)
+	return fmt.Sprintln(string(s))
 }
 
 type Config struct {
@@ -59,3 +63,11 @@ type Config struct {
 	DBName    string `env:"MYSQL_DATABASE, required"`
 	Debug     bool   `env:"DEBUG, default=false"`
 }
+
+type Env struct {
+	CFG  *Config
+	DB   *sql.DB
+	NATS *nats.Conn
+}
+
+var ENV *Env

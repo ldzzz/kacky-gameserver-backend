@@ -5,17 +5,14 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/ldzzz/kacky-gameserver-backend/api/players"
 	"github.com/ldzzz/kacky-gameserver-backend/config"
 	"github.com/nats-io/nats.go"
 )
-
-type Env struct {
-	cfg *config.Config
-	db  *sql.DB
-}
 
 func main() {
 	// load config environment variables
@@ -56,9 +53,9 @@ func Run(cfg *config.Config) error {
 	if nc, err = opts.Connect(); err != nil {
 		return err
 	}
-	defer nc.Close()
+	defer nc.Drain()
 	slog.Info(fmt.Sprintf("Connected to NATS server: %s:%d", cfg.NATSHost, cfg.NATSPort))
-	// TODO: setup callbacks for all NATS channelsn
+
 	/***********************************database***********************************/
 	slog.Info("Initializing database connection")
 	var db *sql.DB
@@ -77,7 +74,7 @@ func Run(cfg *config.Config) error {
 		return err
 	}
 
-	// set connection pool to make sense
+	// configure connection pool
 	db.SetMaxOpenConns(32)
 	db.SetMaxIdleConns(32)
 	db.SetConnMaxLifetime(30 * time.Minute)
@@ -90,8 +87,19 @@ func Run(cfg *config.Config) error {
 	defer db.Close()
 	slog.Info(fmt.Sprintf("Connected to the database: %s@%s:%d", cfg.DBUser, cfg.DBHost, cfg.DBPort))
 	// Create an instance of Env containing the connection pool.
-	//env := &Env{cfg, db}
+	config.ENV = &config.Env{CFG: cfg, DB: db, NATS: nc}
 
+	// init endpoints
+	slog.Info("Initializing endpoints..")
+	players.InitServices()
+
+	rep, _ := nc.Request("player.connect", []byte("{\"login\":\"mylogin\",\"nickname\":\"mylogin\",\"zone\":\"A|B|C\"}"), time.Second)
+	fmt.Println(string(rep.Data))
+
+	// TODO: no clue how to wait properly (this is Ctrl+C wait)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
 	return nil
 }
 

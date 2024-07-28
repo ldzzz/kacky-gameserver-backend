@@ -1,6 +1,7 @@
 services:
   kacky_gsb:
     container_name: kackyGSB
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -15,13 +16,14 @@ services:
       - ..:/go/src/kacky-gameserver-backend:cached
     depends_on:
       kacky_db:
-         condition: service_healthy
+        condition: service_healthy
       kacky_nats:
         condition: service_started
 
   kacky_nats:
     image: nats:${NATS_VER:-2.10-alpine}
     container_name: kackyNATS
+    restart: unless-stopped
     volumes:
       - ./nats-dev-server.conf:/etc/nats/nats-server.conf:ro
     ports:
@@ -35,11 +37,18 @@ services:
   kacky_db:
     image: mariadb:${MYSQL_VER:-11.4.2}
     container_name: kackyDB
+    restart: unless-stopped
     env_file: ".env.dev"
     volumes:
       - ${PWD}/.devcontainer/db-mock-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--connect",
+          "--innodb_initialized"
+        ]
       start_period: 10s
       interval: 10s
       timeout: 5s
