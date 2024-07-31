@@ -11,6 +11,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/ldzzz/kacky-gameserver-backend/api/players"
 	"github.com/ldzzz/kacky-gameserver-backend/config"
+	dbops "github.com/ldzzz/kacky-gameserver-backend/dbops"
 	"github.com/nats-io/nats.go"
 )
 
@@ -67,6 +68,7 @@ func Run(cfg *config.Config) error {
 		DBName:               cfg.DBName,
 		CheckConnLiveness:    true,
 		AllowNativePasswords: true,
+		ParseTime:            true,
 	}
 
 	// Get a database handle.
@@ -85,15 +87,16 @@ func Run(cfg *config.Config) error {
 	}
 
 	defer db.Close()
+	queryConn := dbops.New(db)
 	slog.Info(fmt.Sprintf("Connected to the database: %s@%s:%d", cfg.DBUser, cfg.DBHost, cfg.DBPort))
 	// Create an instance of Env containing the connection pool.
-	config.ENV = &config.Env{CFG: cfg, DB: db, NATS: nc}
+	config.ENV = &config.Env{CFG: cfg, DB: queryConn, NATS: nc}
 
 	// init endpoints
 	slog.Info("Initializing endpoints..")
 	players.InitServices()
 
-	rep, _ := nc.Request("player.connect", []byte("{\"login\":\"mylogin\",\"nickname\":\"mylogin\",\"zone\":\"A|B|C\"}"), time.Second)
+	rep, _ := nc.Request("player.connect", []byte("{\"login\":\"mylogin\",\"nickname\":\"mylogin\",\"zone\":\"A|B|C\", \"gameType\": \"KK\"}"), time.Second)
 	fmt.Println(string(rep.Data))
 
 	// TODO: no clue how to wait properly (this is Ctrl+C wait)

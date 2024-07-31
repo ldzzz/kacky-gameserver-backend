@@ -1,17 +1,17 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "kacky-server-backend",
-	"dockerComposeFile": "docker-compose-dev.yml",
-	"service": "kacky_gsb",
-	"workspaceFolder": "/go/src/kacky-gameserver-backend",
-	"shutdownAction": "stopCompose",
-	"features": {
-		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-			"upgradePackages": true
-		}
-	},
-	"customizations": {
+    "name": "kacky-server-backend",
+    "dockerComposeFile": "docker-compose-dev.yml",
+    "service": "kacky_gsb",
+    "workspaceFolder": "/go/src/kacky-gameserver-backend",
+    "shutdownAction": "stopCompose",
+    "features": {
+        "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+            "upgradePackages": true
+        }
+    },
+    "customizations": {
         "vscode": {
             "extensions": [
                 "golang.go",
@@ -41,6 +41,7 @@
                 "go.coverOnSingleTest": true,
                 "go.coverOnSingleTestFile": true,
                 "go.coverOnTestPackage": true,
+                "go.formatTool": "gofmt",
                 "go.lintTool": "golangci-lint",
                 "go.lintOnSave": "package",
                 "[go]": {
@@ -56,6 +57,6 @@
                     "ms-azuretools.vscode-docker": "workspace"
                 }
             }
-		}
-	}
+        }
+    }
 }

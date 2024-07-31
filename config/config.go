@@ -2,12 +2,12 @@ package config
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
 
+	"github.com/ldzzz/kacky-gameserver-backend/dbops"
 	prettylog "github.com/ldzzz/kacky-gameserver-backend/utils/logging"
 	"github.com/nats-io/nats.go"
 	envconfig "github.com/sethvargo/go-envconfig"
@@ -66,7 +66,7 @@ type Config struct {
 
 type Env struct {
 	CFG  *Config
-	DB   *sql.DB
+	DB   *dbops.Queries
 	NATS *nats.Conn
 }
 

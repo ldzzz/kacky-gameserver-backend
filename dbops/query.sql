@@ -1,15 +1,16 @@
 -- name: GetPlayer :one
 SELECT * FROM tm_players
-WHERE login = $1;
+WHERE login = ? AND game_type = ?;
 
--- name: CreatePlayer :exec
+-- name: CreateUpdatePlayer :exec
 INSERT INTO tm_players (
   login, nickname, zone, game_type
 ) VALUES (
-  $1, $2, $3, $4
-);
+  ?,?,?,?
+)
+ON DUPLICATE KEY UPDATE nickname=VALUES(nickname), zone=VALUES(zone);
 
 -- name: GetPlayerFinishes :many
 SELECT finishes.* FROM finishes
 JOIN tm_players ON finishes.player_id = tm_players.id
-WHERE tm_players.login = $1 AND tm_players.game_type = $2;
+WHERE tm_players.login = ? AND tm_players.game_type = ?;
