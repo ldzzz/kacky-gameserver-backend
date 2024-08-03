@@ -16,9 +16,10 @@ import (
 type DataSelector string
 
 const (
-	CONNECT DataSelector = "connect"
-	FINISH  DataSelector = "finish"
-	TAG     DataSelector = "tag"
+	CONNECT  DataSelector = "connect"
+	FINISH   DataSelector = "finish"
+	NICKNAME DataSelector = "nickname"
+	TAG      DataSelector = "tag"
 )
 
 type PlayerError struct {
@@ -48,9 +49,11 @@ type PlayerData struct {
 func (pd PlayerData) isValid(sel DataSelector) bool {
 	switch sel {
 	case CONNECT:
-		return pd.Login != nil && pd.GameType != nil
+		return pd.Login != nil && pd.GameType != nil && pd.Zone != nil && pd.Nickname != nil
 	case FINISH:
 		return false
+	case NICKNAME:
+		return pd.Login != nil && pd.GameType != nil && pd.Nickname != nil
 	}
 
 	panic("No valid DataSelector provided, this shouldn't happen")
@@ -100,13 +103,13 @@ func playerConnect(req micro.Request) {
 	}
 
 	// insert player if it doesn't exist, else update nickname and zone on connect
-	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: *pcon.Login, Nickname: sql.NullString{String: *pcon.Nickname, Valid: true}, Zone: sql.NullString{String: *pcon.Zone, Valid: true}, GameType: sql.NullString{String: *pcon.GameType, Valid: true}}); err != nil {
+	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: *pcon.Login, Nickname: sql.NullString{String: *pcon.Nickname, Valid: true}, Zone: sql.NullString{String: *pcon.Zone, Valid: true}, GameType: *pcon.GameType}); err != nil {
 		slog.Error("Failed to create or update player", "error", err)
 		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
 		return
 	}
 	var fetchedPlayer dbops.TmPlayer
-	if fetchedPlayer, err = config.ENV.DB.GetPlayer(context.Background(), dbops.GetPlayerParams{Login: *pcon.Login, GameType: sql.NullString{String: *pcon.GameType, Valid: true}}); err != nil {
+	if fetchedPlayer, err = config.ENV.DB.GetPlayer(context.Background(), dbops.GetPlayerParams{Login: *pcon.Login, GameType: *pcon.GameType}); err != nil {
 		slog.Error("Failed to get player", "error", err)
 		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
 		return
@@ -114,7 +117,7 @@ func playerConnect(req micro.Request) {
 
 	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", helpers.PrettyPrint(pcon), helpers.PrettyPrint(fetchedPlayer)))
 	req.RespondJSON(fetchedPlayer)
-} //TODO: schema all models specify what is not null explicitly in schema
+}
 
 func playerFinish(req micro.Request) {
 	var pcon PlayerData
@@ -127,11 +130,32 @@ func playerFinish(req micro.Request) {
 
 func playerSetNickname(req micro.Request) {
 	var pcon PlayerData
-	if err := pcon.Deserialize(req); err != nil {
+	var err error
+	if err = pcon.Deserialize(req); err != nil {
 		req.RespondJSON(err)
+		return
 	}
-	slog.Debug(pcon.String())
-	req.RespondJSON(pcon)
+	if !pcon.isValid(NICKNAME) {
+		slog.Error(fmt.Sprintf("Required values not provided: %s", helpers.PrettyPrint(pcon)))
+		req.RespondJSON(&PlayerError{400, "Missing Required Fields"})
+		return
+	}
+
+	// update player nickname
+	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: *pcon.Login, Nickname: sql.NullString{String: *pcon.Nickname, Valid: true}, GameType: *pcon.GameType}); err != nil {
+		slog.Error("Failed to create or update player nickname", "error", err)
+		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
+		return
+	}
+	var fetchedPlayer dbops.TmPlayer
+	if fetchedPlayer, err = config.ENV.DB.GetPlayer(context.Background(), dbops.GetPlayerParams{Login: *pcon.Login, GameType: *pcon.GameType}); err != nil {
+		slog.Error("Failed to get player", "error", err)
+		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
+		return
+	}
+
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", helpers.PrettyPrint(pcon), helpers.PrettyPrint(fetchedPlayer)))
+	req.RespondJSON(fetchedPlayer)
 }
 
 func playerAddStreamer(req micro.Request) {

@@ -5,135 +5,148 @@
 package dbops
 
 import (
-	"database/sql"
 	"encoding/json"
 	"time"
 )
 
 type ApiKey struct {
-	ID        int64        `json:"id"`
-	Key       string       `json:"key"`
-	Name      string       `json:"name"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
+	ID        int64     `json:"id"`
+	Key       string    `json:"key"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Event struct {
-	ID        int64        `json:"id"`
-	Edition   int32        `json:"edition"`
-	GameType  string       `json:"game_type"`
-	StartsAt  sql.NullTime `json:"starts_at"`
-	EndsAt    sql.NullTime `json:"ends_at"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
+	ID        int64     `json:"id"`
+	Edition   int32     `json:"edition"`
+	GameType  string    `json:"gameType"`
+	StartsAt  time.Time `json:"startsAt"`
+	EndsAt    time.Time `json:"endsAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type EventFinish struct {
-	ID             int64        `json:"id"`
-	MapID          int64        `json:"map_id"`
-	PlayerID       int64        `json:"player_id"`
-	Score          int32        `json:"score"`
-	FinishCounter  int32        `json:"finish_counter"`
-	CreatedAt      sql.NullTime `json:"created_at"`
-	UpdatedAt      sql.NullTime `json:"updated_at"`
-	LastFinishedAt sql.NullTime `json:"last_finished_at"`
+	ID             int64     `json:"id"`
+	MapID          int64     `json:"mapId"`
+	PlayerID       int64     `json:"playerId"`
+	Score          int32     `json:"score"`
+	FinishCounter  int32     `json:"finishCounter"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	LastFinishedAt time.Time `json:"lastFinishedAt"`
+}
+
+type EventPlayerEditionStat struct {
+	ID        int64     `json:"id"`
+	PlayerID  int64     `json:"playerId"`
+	Average   float64   `json:"average"`
+	Finishes  int32     `json:"finishes"`
+	EventID   int64     `json:"eventId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Finish struct {
-	ID             int64        `json:"id"`
-	MapID          int64        `json:"map_id"`
-	PlayerID       int64        `json:"player_id"`
-	Score          int32        `json:"score"`
-	FinishCounter  int32        `json:"finish_counter"`
-	CreatedAt      sql.NullTime `json:"created_at"`
-	UpdatedAt      sql.NullTime `json:"updated_at"`
-	LastFinishedAt sql.NullTime `json:"last_finished_at"`
+	ID             int64     `json:"id"`
+	MapID          int64     `json:"mapId"`
+	PlayerID       int64     `json:"playerId"`
+	Score          int32     `json:"score"`
+	FinishCounter  int32     `json:"finishCounter"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	LastFinishedAt time.Time `json:"lastFinishedAt"`
 }
 
 type KarmaVote struct {
-	ID        int64        `json:"id"`
-	MapID     int64        `json:"map_id"`
-	PlayerID  int64        `json:"player_id"`
-	Vote      float64      `json:"vote"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
+	ID        int64     `json:"id"`
+	MapID     int64     `json:"mapId"`
+	PlayerID  int64     `json:"playerId"`
+	Vote      float64   `json:"vote"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Map struct {
-	ID            int64        `json:"id"`
-	Uuid          string       `json:"uuid"`
-	EventID       int64        `json:"event_id"`
-	FullName      string       `json:"full_name"`
-	Number        int32        `json:"number"`
-	Author        string       `json:"author"`
-	AuthorTime    int32        `json:"author_time"`
-	TotalFinishes int32        `json:"total_finishes"`
-	TotalPlaytime int32        `json:"total_playtime"`
-	CreatedAt     sql.NullTime `json:"created_at"`
-	UpdatedAt     sql.NullTime `json:"updated_at"`
+	ID            int64     `json:"id"`
+	MapUid        string    `json:"mapUid"`
+	EventID       int64     `json:"eventId"`
+	FullName      string    `json:"fullName"`
+	Number        int32     `json:"number"`
+	Author        string    `json:"author"`
+	AuthorTime    int32     `json:"authorTime"`
+	TotalFinishes int32     `json:"totalFinishes"`
+	TotalPlaytime int32     `json:"totalPlaytime"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 type PlayerEditionStat struct {
-	ID       int64   `json:"id"`
-	PlayerID int64   `json:"player_id"`
-	Average  float64 `json:"average"`
-	Finishes int32   `json:"finishes"`
-	EventID  int64   `json:"event_id"`
+	ID        int64     `json:"id"`
+	PlayerID  int64     `json:"playerId"`
+	Average   float64   `json:"average"`
+	Finishes  int32     `json:"finishes"`
+	EventID   int64     `json:"eventId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Server struct {
 	ID         int64         `json:"id"`
 	Name       string        `json:"name"`
-	GameType   string        `json:"game_type"`
-	Difficulty sql.NullInt32 `json:"difficulty"`
+	GameType   string        `json:"gameType"`
+	Difficulty *int32 `json:"difficulty"`
 	Timelimit  int32         `json:"timelimit"`
 	Online     int8          `json:"online"`
-	CreatedAt  sql.NullTime  `json:"created_at"`
-	UpdatedAt  sql.NullTime  `json:"updated_at"`
+	CreatedAt  time.Time     `json:"createdAt"`
+	UpdatedAt  time.Time     `json:"updatedAt"`
 }
 
 type TmPlayer struct {
 	ID            int64          `json:"id"`
 	Login         string         `json:"login"`
-	AccountID     sql.NullString `json:"account_id"`
-	GameType      sql.NullString `json:"game_type"`
-	Zone          sql.NullString `json:"zone"`
-	TotalFinishes int32          `json:"total_finishes"`
-	Nickname      sql.NullString `json:"nickname"`
-	Role          sql.NullString `json:"role"`
-	IsMuted       sql.NullInt16  `json:"is_muted"`
-	IsBlacklisted sql.NullInt16  `json:"is_blacklisted"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
+	GameType      string         `json:"gameType"`
+	Zone          *string `json:"zone"`
+	TotalFinishes int32          `json:"totalFinishes"`
+	Nickname      *string `json:"nickname"`
+	Role          string         `json:"role"`
+	IsMuted       int8           `json:"isMuted"`
+	IsBlacklisted int8           `json:"isBlacklisted"`
+	CreatedAt     time.Time      `json:"createdAt"`
+	UpdatedAt     time.Time      `json:"updatedAt"`
 }
 
 type UserMetadatum struct {
 	ID           int64           `json:"id"`
-	UserID       int64           `json:"user_id"`
-	StreamData   json.RawMessage `json:"stream_data"`
+	WebUserID    *int64   `json:"webUserId"`
+	TmnfPlayerID *int64   `json:"tmnfPlayerId"`
+	Tm20PlayerID *int64   `json:"tm20PlayerId"`
+	StreamData   json.RawMessage `json:"streamData"`
 	Tags         json.RawMessage `json:"tags"`
 	Difficulties json.RawMessage `json:"difficulties"`
-	CreatedAt    sql.NullTime    `json:"created_at"`
-	UpdatedAt    sql.NullTime    `json:"updated_at"`
+	Alarms       json.RawMessage `json:"alarms"`
+	CreatedAt    time.Time       `json:"createdAt"`
+	UpdatedAt    time.Time       `json:"updatedAt"`
 }
 
 type WebUser struct {
 	ID           int64          `json:"id"`
-	DiscordLogin string         `json:"discord_login"`
-	Tm20PlayerID sql.NullInt64  `json:"tm20_player_id"`
-	TmnfPlayerID sql.NullInt64  `json:"tmnf_player_id"`
-	Role         sql.NullString `json:"role"`
-	CreatedAt    sql.NullTime   `json:"created_at"`
-	UpdatedAt    sql.NullTime   `json:"updated_at"`
+	DiscordLogin string         `json:"discordLogin"`
+	Tm20PlayerID *int64  `json:"tm20PlayerId"`
+	TmnfPlayerID *int64  `json:"tmnfPlayerId"`
+	Role         *string `json:"role"`
+	CreatedAt    time.Time      `json:"createdAt"`
+	UpdatedAt    time.Time      `json:"updatedAt"`
 }
 
 type WorldRecord struct {
-	ID        int64        `json:"id"`
-	MapID     int64        `json:"map_id"`
-	WrHolder  string       `json:"wr_holder"`
-	Score     int32        `json:"score"`
-	Source    string       `json:"source"`
-	DrivenAt  time.Time    `json:"driven_at"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
+	ID        int64     `json:"id"`
+	MapID     int64     `json:"mapId"`
+	WrHolder  string    `json:"wrHolder"`
+	Score     int32     `json:"score"`
+	Source    string    `json:"source"`
+	DrivenAt  time.Time `json:"drivenAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

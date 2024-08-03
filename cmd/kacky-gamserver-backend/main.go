@@ -96,8 +96,8 @@ func Run(cfg *config.Config) error {
 	slog.Info("Initializing endpoints..")
 	players.InitServices()
 
-	rep, _ := nc.Request("player.connect", []byte("{\"login\":\"mylogin\",\"nickname\":\"mylogin\",\"zone\":\"A|B|C\", \"gameType\": \"KK\"}"), time.Second)
-	fmt.Println(string(rep.Data))
+	//rep, _ := nc.Request("player.connect", []byte("{\"login\":\"mylogin\",\"nickname\":\"mylogin\",\"zone\":\"A|B|C\", \"gameType\": \"KK\"}"), time.Second)
+	//fmt.Println(string(rep.Data))
 
 	// TODO: no clue how to wait properly (this is Ctrl+C wait)
 	c := make(chan os.Signal, 1)

@@ -23,7 +23,7 @@ type CreateUpdatePlayerParams struct {
 	Login    string         `json:"login"`
 	Nickname sql.NullString `json:"nickname"`
 	Zone     sql.NullString `json:"zone"`
-	GameType sql.NullString `json:"game_type"`
+	GameType string         `json:"gameType"`
 }
 
 func (q *Queries) CreateUpdatePlayer(ctx context.Context, arg CreateUpdatePlayerParams) error {
@@ -37,13 +37,13 @@ func (q *Queries) CreateUpdatePlayer(ctx context.Context, arg CreateUpdatePlayer
 }
 
 const getPlayer = `-- name: GetPlayer :one
-SELECT id, login, account_id, game_type, zone, total_finishes, nickname, role, is_muted, is_blacklisted, created_at, updated_at FROM tm_players
+SELECT id, login, game_type, zone, total_finishes, nickname, role, is_muted, is_blacklisted, created_at, updated_at FROM tm_players
 WHERE login = ? AND game_type = ?
 `
 
 type GetPlayerParams struct {
-	Login    string         `json:"login"`
-	GameType sql.NullString `json:"game_type"`
+	Login    string `json:"login"`
+	GameType string `json:"gameType"`
 }
 
 func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (TmPlayer, error) {
@@ -52,7 +52,6 @@ func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (TmPlayer,
 	err := row.Scan(
 		&i.ID,
 		&i.Login,
-		&i.AccountID,
 		&i.GameType,
 		&i.Zone,
 		&i.TotalFinishes,
@@ -73,8 +72,8 @@ WHERE tm_players.login = ? AND tm_players.game_type = ?
 `
 
 type GetPlayerFinishesParams struct {
-	Login    string         `json:"login"`
-	GameType sql.NullString `json:"game_type"`
+	Login    string `json:"login"`
+	GameType string `json:"gameType"`
 }
 
 func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesParams) ([]Finish, error) {
