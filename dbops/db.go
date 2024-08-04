@@ -27,11 +27,23 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createUpdatePlayerStmt, err = db.PrepareContext(ctx, createUpdatePlayer); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUpdatePlayer: %w", err)
 	}
+	if q.createUpdateStreamDataTM20Stmt, err = db.PrepareContext(ctx, createUpdateStreamDataTM20); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUpdateStreamDataTM20: %w", err)
+	}
+	if q.createUpdateStreamDataTMNFStmt, err = db.PrepareContext(ctx, createUpdateStreamDataTMNF); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUpdateStreamDataTMNF: %w", err)
+	}
 	if q.getPlayerStmt, err = db.PrepareContext(ctx, getPlayer); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayer: %w", err)
 	}
 	if q.getPlayerFinishesStmt, err = db.PrepareContext(ctx, getPlayerFinishes); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayerFinishes: %w", err)
+	}
+	if q.getPlayerMetadataStmt, err = db.PrepareContext(ctx, getPlayerMetadata); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPlayerMetadata: %w", err)
+	}
+	if q.setPlayerRoleStmt, err = db.PrepareContext(ctx, setPlayerRole); err != nil {
+		return nil, fmt.Errorf("error preparing query SetPlayerRole: %w", err)
 	}
 	return &q, nil
 }
@@ -43,6 +55,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createUpdatePlayerStmt: %w", cerr)
 		}
 	}
+	if q.createUpdateStreamDataTM20Stmt != nil {
+		if cerr := q.createUpdateStreamDataTM20Stmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUpdateStreamDataTM20Stmt: %w", cerr)
+		}
+	}
+	if q.createUpdateStreamDataTMNFStmt != nil {
+		if cerr := q.createUpdateStreamDataTMNFStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUpdateStreamDataTMNFStmt: %w", cerr)
+		}
+	}
 	if q.getPlayerStmt != nil {
 		if cerr := q.getPlayerStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPlayerStmt: %w", cerr)
@@ -51,6 +73,16 @@ func (q *Queries) Close() error {
 	if q.getPlayerFinishesStmt != nil {
 		if cerr := q.getPlayerFinishesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPlayerFinishesStmt: %w", cerr)
+		}
+	}
+	if q.getPlayerMetadataStmt != nil {
+		if cerr := q.getPlayerMetadataStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPlayerMetadataStmt: %w", cerr)
+		}
+	}
+	if q.setPlayerRoleStmt != nil {
+		if cerr := q.setPlayerRoleStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing setPlayerRoleStmt: %w", cerr)
 		}
 	}
 	return err
@@ -90,19 +122,27 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                     DBTX
-	tx                     *sql.Tx
-	createUpdatePlayerStmt *sql.Stmt
-	getPlayerStmt          *sql.Stmt
-	getPlayerFinishesStmt  *sql.Stmt
+	db                             DBTX
+	tx                             *sql.Tx
+	createUpdatePlayerStmt         *sql.Stmt
+	createUpdateStreamDataTM20Stmt *sql.Stmt
+	createUpdateStreamDataTMNFStmt *sql.Stmt
+	getPlayerStmt                  *sql.Stmt
+	getPlayerFinishesStmt          *sql.Stmt
+	getPlayerMetadataStmt          *sql.Stmt
+	setPlayerRoleStmt              *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                     tx,
-		tx:                     tx,
-		createUpdatePlayerStmt: q.createUpdatePlayerStmt,
-		getPlayerStmt:          q.getPlayerStmt,
-		getPlayerFinishesStmt:  q.getPlayerFinishesStmt,
+		db:                             tx,
+		tx:                             tx,
+		createUpdatePlayerStmt:         q.createUpdatePlayerStmt,
+		createUpdateStreamDataTM20Stmt: q.createUpdateStreamDataTM20Stmt,
+		createUpdateStreamDataTMNFStmt: q.createUpdateStreamDataTMNFStmt,
+		getPlayerStmt:                  q.getPlayerStmt,
+		getPlayerFinishesStmt:          q.getPlayerFinishesStmt,
+		getPlayerMetadataStmt:          q.getPlayerMetadataStmt,
+		setPlayerRoleStmt:              q.setPlayerRoleStmt,
 	}
 }

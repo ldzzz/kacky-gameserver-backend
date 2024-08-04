@@ -8,6 +8,7 @@ package dbops
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 )
 
 const createUpdatePlayer = `-- name: CreateUpdatePlayer :exec
@@ -33,6 +34,44 @@ func (q *Queries) CreateUpdatePlayer(ctx context.Context, arg CreateUpdatePlayer
 		arg.Zone,
 		arg.GameType,
 	)
+	return err
+}
+
+const createUpdateStreamDataTM20 = `-- name: CreateUpdateStreamDataTM20 :exec
+INSERT INTO user_metadata (
+  tm20_player_id, stream_data
+) VALUES (
+  ?,?
+)
+ON DUPLICATE KEY UPDATE stream_data=VALUES(stream_data)
+`
+
+type CreateUpdateStreamDataTM20Params struct {
+	Tm20PlayerID sql.NullInt64   `json:"tm20PlayerId"`
+	StreamData   json.RawMessage `json:"streamData"`
+}
+
+func (q *Queries) CreateUpdateStreamDataTM20(ctx context.Context, arg CreateUpdateStreamDataTM20Params) error {
+	_, err := q.exec(ctx, q.createUpdateStreamDataTM20Stmt, createUpdateStreamDataTM20, arg.Tm20PlayerID, arg.StreamData)
+	return err
+}
+
+const createUpdateStreamDataTMNF = `-- name: CreateUpdateStreamDataTMNF :exec
+INSERT INTO user_metadata (
+  tmnf_player_id, stream_data
+) VALUES (
+  ?,?
+)
+ON DUPLICATE KEY UPDATE stream_data=VALUES(stream_data)
+`
+
+type CreateUpdateStreamDataTMNFParams struct {
+	TmnfPlayerID sql.NullInt64   `json:"tmnfPlayerId"`
+	StreamData   json.RawMessage `json:"streamData"`
+}
+
+func (q *Queries) CreateUpdateStreamDataTMNF(ctx context.Context, arg CreateUpdateStreamDataTMNFParams) error {
+	_, err := q.exec(ctx, q.createUpdateStreamDataTMNFStmt, createUpdateStreamDataTMNF, arg.TmnfPlayerID, arg.StreamData)
 	return err
 }
 
@@ -106,4 +145,47 @@ func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesPa
 		return nil, err
 	}
 	return items, nil
+}
+
+const getPlayerMetadata = `-- name: GetPlayerMetadata :one
+SELECT id, web_user_id, tmnf_player_id, tm20_player_id, stream_data, tags, difficulties, alarms, created_at, updated_at FROM user_metadata
+WHERE tm20_player_id = ? OR tmnf_player_id = ?
+`
+
+type GetPlayerMetadataParams struct {
+	Tm20PlayerID sql.NullInt64 `json:"tm20PlayerId"`
+	TmnfPlayerID sql.NullInt64 `json:"tmnfPlayerId"`
+}
+
+func (q *Queries) GetPlayerMetadata(ctx context.Context, arg GetPlayerMetadataParams) (UserMetadatum, error) {
+	row := q.queryRow(ctx, q.getPlayerMetadataStmt, getPlayerMetadata, arg.Tm20PlayerID, arg.TmnfPlayerID)
+	var i UserMetadatum
+	err := row.Scan(
+		&i.ID,
+		&i.WebUserID,
+		&i.TmnfPlayerID,
+		&i.Tm20PlayerID,
+		&i.StreamData,
+		&i.Tags,
+		&i.Difficulties,
+		&i.Alarms,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const setPlayerRole = `-- name: SetPlayerRole :exec
+UPDATE tm_players SET role = ? WHERE login = ? AND game_type = ?
+`
+
+type SetPlayerRoleParams struct {
+	Role     string `json:"role"`
+	Login    string `json:"login"`
+	GameType string `json:"gameType"`
+}
+
+func (q *Queries) SetPlayerRole(ctx context.Context, arg SetPlayerRoleParams) error {
+	_, err := q.exec(ctx, q.setPlayerRoleStmt, setPlayerRole, arg.Role, arg.Login, arg.GameType)
+	return err
 }

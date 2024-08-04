@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/ldzzz/kacky-gameserver-backend/dbops"
-	prettylog "github.com/ldzzz/kacky-gameserver-backend/utils/logging"
+	prettylog "github.com/ldzzz/kacky-gameserver-backend/internal/logging"
 	"github.com/nats-io/nats.go"
 	envconfig "github.com/sethvargo/go-envconfig"
 )

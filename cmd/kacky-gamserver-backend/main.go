@@ -109,3 +109,7 @@ func Run(cfg *config.Config) error {
 // TODO: define error handling ??
 // TODO: write unit tests
 // TODO: write integration tests
+// TODO: pprof
+//TODO: in backend when user relates to the accounts, need to consider metadata merging
+//		i.e. stream added for two players kk and kr, user makes a web account, links kk and kr accounts, metadata must be merged at this point,
+//		i.e. we have to search for metadata of both accounts, delete both metadatas, create a new aggregate metadata

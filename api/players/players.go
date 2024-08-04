@@ -9,69 +9,9 @@ import (
 
 	"github.com/ldzzz/kacky-gameserver-backend/config"
 	"github.com/ldzzz/kacky-gameserver-backend/dbops"
-	"github.com/ldzzz/kacky-gameserver-backend/utils/logging/helpers"
+	"github.com/ldzzz/kacky-gameserver-backend/internal/utils"
 	"github.com/nats-io/nats.go/micro"
 )
-
-type DataSelector string
-
-const (
-	CONNECT  DataSelector = "connect"
-	FINISH   DataSelector = "finish"
-	NICKNAME DataSelector = "nickname"
-	TAG      DataSelector = "tag"
-)
-
-type PlayerError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	//Error   error
-}
-
-func (err PlayerError) Error() string {
-	ret, _ := json.Marshal(err)
-	return string(ret)
-}
-
-type PlayerData struct {
-	Login        *string `json:"login"`
-	Nickname     *string `json:"nickname"`
-	Zone         *string `json:"zone"`
-	MapUid       *string `json:"mapUid"`
-	Score        *int    `json:"score"`
-	StreamStatus *bool   `json:"streamStatus"`
-	Platform     *string `json:"platform"`
-	StreamLogin  *string `json:"streamLogin"`
-	GameType     *string `json:"gameType"`
-}
-
-// check if deserialized data received has necessary values for the given functionality
-func (pd PlayerData) isValid(sel DataSelector) bool {
-	switch sel {
-	case CONNECT:
-		return pd.Login != nil && pd.GameType != nil && pd.Zone != nil && pd.Nickname != nil
-	case FINISH:
-		return false
-	case NICKNAME:
-		return pd.Login != nil && pd.GameType != nil && pd.Nickname != nil
-	}
-
-	panic("No valid DataSelector provided, this shouldn't happen")
-}
-
-func (pd *PlayerData) Deserialize(req micro.Request) error {
-	if err := json.Unmarshal(req.Data(), pd); err != nil {
-		slog.Error("Unable to marshal JSON", "error", err)
-		return PlayerError{400, "Deserialize failed"}
-	}
-
-	return nil
-}
-
-func (pd *PlayerData) String() string {
-	s, _ := json.Marshal(pd)
-	return fmt.Sprintln(string(s))
-}
 
 func InitServices() {
 	srv, _ := micro.AddService(config.ENV.NATS, micro.Config{
@@ -80,110 +20,204 @@ func InitServices() {
 	})
 	playersGroup := srv.AddGroup("player")
 	_ = playersGroup.AddEndpoint("connect", micro.HandlerFunc(playerConnect))
-	_ = playersGroup.AddEndpoint("finish", micro.HandlerFunc(playerFinish))
-	_ = playersGroup.AddEndpoint("setNickname", micro.HandlerFunc(playerSetNickname))
+	//_ = playersGroup.AddEndpoint("finish", micro.HandlerFunc(playerFinish))
+	_ = playersGroup.AddEndpoint("setName", micro.HandlerFunc(playerSetNickname))
 	_ = playersGroup.AddEndpoint("addStreamer", micro.HandlerFunc(playerAddStreamer))
 	_ = playersGroup.AddEndpoint("setStreamStatus", micro.HandlerFunc(playerStreamStatus))
-	_ = playersGroup.AddEndpoint("setTags", micro.HandlerFunc(playerSetTags))
+	//_ = playersGroup.AddEndpoint("setTags", micro.HandlerFunc(playerSetTags))
 
 	slog.Info(fmt.Sprintf("Initialized %s", srv.Info()))
 }
 
 func playerConnect(req micro.Request) {
-	var pcon PlayerData
+	var pd PlayerConnect
 	var err error
-	if err = pcon.Deserialize(req); err != nil {
-		req.RespondJSON(err)
-		return
-	}
-	if !pcon.isValid(CONNECT) {
-		slog.Error(fmt.Sprintf("Required values not provided: %s", helpers.PrettyPrint(pcon)))
-		req.RespondJSON(&PlayerError{400, "Missing Required Fields"})
+
+	if err = utils.Deserialize(req, &pd); err != nil {
+		_ = req.RespondJSON(err)
 		return
 	}
 
 	// insert player if it doesn't exist, else update nickname and zone on connect
-	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: *pcon.Login, Nickname: sql.NullString{String: *pcon.Nickname, Valid: true}, Zone: sql.NullString{String: *pcon.Zone, Valid: true}, GameType: *pcon.GameType}); err != nil {
+	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: pd.Login, Nickname: sql.NullString{String: pd.Nickname, Valid: true}, Zone: sql.NullString{String: pd.Zone, Valid: true}, GameType: pd.GameType}); err != nil {
 		slog.Error("Failed to create or update player", "error", err)
-		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
-		return
-	}
-	var fetchedPlayer dbops.TmPlayer
-	if fetchedPlayer, err = config.ENV.DB.GetPlayer(context.Background(), dbops.GetPlayerParams{Login: *pcon.Login, GameType: *pcon.GameType}); err != nil {
-		slog.Error("Failed to get player", "error", err)
-		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
 		return
 	}
 
-	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", helpers.PrettyPrint(pcon), helpers.PrettyPrint(fetchedPlayer)))
-	req.RespondJSON(fetchedPlayer)
-}
-
-func playerFinish(req micro.Request) {
-	var pcon PlayerData
-	if err := pcon.Deserialize(req); err != nil {
-		req.RespondJSON(err)
+	// get the player data to return on connect
+	var fetchedPlayer *dbops.TmPlayer
+	if fetchedPlayer, err = getPlayer(pd.Login, pd.GameType); err != nil {
+		_ = req.RespondJSON(err)
+		return
 	}
-	slog.Debug(pcon.String())
-	req.RespondJSON(pcon)
+
+	// get metadata (to obtain stream data)
+	var playerMetadata *dbops.UserMetadatum
+	if playerMetadata, err = getPlayerMetadata(fetchedPlayer.ID); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	//finishes
+	var playerFinishes []dbops.Finish
+	if playerFinishes, err = config.ENV.DB.GetPlayerFinishes(context.Background(), dbops.GetPlayerFinishesParams{Login: pd.Login, GameType: pd.GameType}); err != nil && err != sql.ErrNoRows {
+		slog.Error("Failed to get player finishes", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	// patch values
+	combinedPlayerConnectData := struct {
+		dbops.TmPlayer
+		StreamData json.RawMessage `json:"streamData"`
+		Records    []dbops.Finish  `json:"records"`
+	}{*fetchedPlayer, playerMetadata.StreamData, playerFinishes}
+
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse (no stream/records) %s", utils.PrettyPrint(pd), utils.PrettyPrint(fetchedPlayer)))
+	_ = req.RespondJSON(combinedPlayerConnectData)
 }
 
 func playerSetNickname(req micro.Request) {
-	var pcon PlayerData
+	var pd PlayerNickname
 	var err error
-	if err = pcon.Deserialize(req); err != nil {
-		req.RespondJSON(err)
-		return
-	}
-	if !pcon.isValid(NICKNAME) {
-		slog.Error(fmt.Sprintf("Required values not provided: %s", helpers.PrettyPrint(pcon)))
-		req.RespondJSON(&PlayerError{400, "Missing Required Fields"})
+
+	if err = utils.Deserialize(req, &pd); err != nil {
+		_ = req.RespondJSON(err)
 		return
 	}
 
 	// update player nickname
-	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: *pcon.Login, Nickname: sql.NullString{String: *pcon.Nickname, Valid: true}, GameType: *pcon.GameType}); err != nil {
+	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), dbops.CreateUpdatePlayerParams{Login: pd.Login, Nickname: sql.NullString{String: pd.Nickname, Valid: true}, GameType: pd.GameType}); err != nil {
 		slog.Error("Failed to create or update player nickname", "error", err)
-		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
-		return
-	}
-	var fetchedPlayer dbops.TmPlayer
-	if fetchedPlayer, err = config.ENV.DB.GetPlayer(context.Background(), dbops.GetPlayerParams{Login: *pcon.Login, GameType: *pcon.GameType}); err != nil {
-		slog.Error("Failed to get player", "error", err)
-		req.RespondJSON(&PlayerError{500, "Internal Server Error"})
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
 		return
 	}
 
-	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", helpers.PrettyPrint(pcon), helpers.PrettyPrint(fetchedPlayer)))
-	req.RespondJSON(fetchedPlayer)
+	// get the player data
+	var fetchedPlayer *dbops.TmPlayer
+	if fetchedPlayer, err = getPlayer(pd.Login, pd.GameType); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// get metadata (to obtain stream data)
+	var playerMetadata *dbops.UserMetadatum
+	if playerMetadata, err = getPlayerMetadata(fetchedPlayer.ID); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// patch values
+	combinedPlayerData := struct {
+		dbops.TmPlayer
+		StreamData json.RawMessage `json:"streamData"`
+	}{*fetchedPlayer, playerMetadata.StreamData}
+
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", utils.PrettyPrint(pd), utils.PrettyPrint(combinedPlayerData)))
+	_ = req.RespondJSON(combinedPlayerData)
 }
 
 func playerAddStreamer(req micro.Request) {
-	var pcon PlayerData
-	if err := json.Unmarshal(req.Data(), &pcon); err != nil {
-		slog.Error("Unable to marshal JSON", "error", err)
+	var pd PlayerStreamerData
+	var err error
+
+	if err = utils.Deserialize(req, &pd); err != nil {
+		_ = req.RespondJSON(err)
 		return
 	}
-	slog.Debug(pcon.String())
-	req.RespondJSON(pcon)
+
+	// get the player data
+	var fetchedPlayer *dbops.TmPlayer
+	if fetchedPlayer, err = getPlayer(pd.Login, pd.GameType); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// create/update streamer metadata
+	sd := struct {
+		Platform      string `json:"platform"`
+		StreamerLogin string `json:"streamerLogin"`
+		StreamStatus  bool   `json:"streamStatus"`
+	}{pd.Platform, pd.StreamerLogin, *pd.StreamStatus}
+
+	var streamerData json.RawMessage
+	if streamerData, err = json.Marshal(sd); err != nil {
+		slog.Error("Unable to marshal streamer data", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	if err = createUpdateStreamer(pd.GameType, fetchedPlayer.ID, streamerData); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// set role as streamer
+	if err = config.ENV.DB.SetPlayerRole(context.Background(), dbops.SetPlayerRoleParams{Role: "streamer", Login: pd.Login, GameType: pd.GameType}); err != nil {
+		slog.Error("Unable to set player role to streamer", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	// get the player data
+	if fetchedPlayer, err = getPlayer(pd.Login, pd.GameType); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// get metadata (to obtain stream data)
+	var playerMetadata *dbops.UserMetadatum
+	if playerMetadata, err = getPlayerMetadata(fetchedPlayer.ID); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// patch values
+	combinedPlayerData := struct {
+		dbops.TmPlayer
+		StreamData json.RawMessage `json:"streamData"`
+	}{*fetchedPlayer, playerMetadata.StreamData}
+
+	slog.Debug(utils.PrettyPrint(pd))
+	_ = req.RespondJSON(combinedPlayerData)
 }
 
 func playerStreamStatus(req micro.Request) {
-	var pcon PlayerData
-	if err := json.Unmarshal(req.Data(), &pcon); err != nil {
-		slog.Error("Unable to marshal JSON", "error", err)
+	var pd PlayerConnect
+	var err error
+
+	if err = utils.Deserialize(req, &pd); err != nil {
+		_ = req.RespondJSON(err)
 		return
 	}
-	slog.Debug(pcon.String())
-	req.RespondJSON(pcon)
+
+	slog.Debug(utils.PrettyPrint(pd))
+	_ = req.RespondJSON(pd)
+}
+
+/*
+func playerFinish(req micro.Request) {
+	var pd PlayerConnect
+	var err error
+
+	if err = utils.Deserialize(req, &pd); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+	slog.Debug(utils.PrettyPrint(pcon))
+	_ = req.RespondJSON(pcon)
 }
 
 func playerSetTags(req micro.Request) {
-	var pcon PlayerData
-	if err := json.Unmarshal(req.Data(), &pcon); err != nil {
-		slog.Error("Unable to marshal JSON", "error", err)
+	var pd PlayerConnect
+	var err error
+
+	if err = utils.Deserialize(req, &pd); err != nil {
+		_ = req.RespondJSON(err)
 		return
 	}
-	slog.Debug(pcon.String())
-	req.RespondJSON(pcon)
+	slog.Debug(utils.PrettyPrint(pcon))
+	_ = req.RespondJSON(pcon)
 }
+*/

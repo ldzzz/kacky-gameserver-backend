@@ -96,7 +96,7 @@ type Server struct {
 	ID         int64         `json:"id"`
 	Name       string        `json:"name"`
 	GameType   string        `json:"gameType"`
-	Difficulty *int32 `json:"difficulty"`
+	Difficulty *int32 		 `json:"difficulty"`
 	Timelimit  int32         `json:"timelimit"`
 	Online     int8          `json:"online"`
 	CreatedAt  time.Time     `json:"createdAt"`
@@ -107,9 +107,9 @@ type TmPlayer struct {
 	ID            int64          `json:"id"`
 	Login         string         `json:"login"`
 	GameType      string         `json:"gameType"`
-	Zone          *string `json:"zone"`
+	Zone          *string 		 `json:"zone"`
 	TotalFinishes int32          `json:"totalFinishes"`
-	Nickname      *string `json:"nickname"`
+	Nickname      *string 		 `json:"nickname"`
 	Role          string         `json:"role"`
 	IsMuted       int8           `json:"isMuted"`
 	IsBlacklisted int8           `json:"isBlacklisted"`
@@ -119,9 +119,9 @@ type TmPlayer struct {
 
 type UserMetadatum struct {
 	ID           int64           `json:"id"`
-	WebUserID    *int64   `json:"webUserId"`
-	TmnfPlayerID *int64   `json:"tmnfPlayerId"`
-	Tm20PlayerID *int64   `json:"tm20PlayerId"`
+	WebUserID    *int64   		 `json:"webUserId"`
+	TmnfPlayerID *int64   		 `json:"tmnfPlayerId"`
+	Tm20PlayerID *int64   		 `json:"tm20PlayerId"`
 	StreamData   json.RawMessage `json:"streamData"`
 	Tags         json.RawMessage `json:"tags"`
 	Difficulties json.RawMessage `json:"difficulties"`
@@ -133,9 +133,9 @@ type UserMetadatum struct {
 type WebUser struct {
 	ID           int64          `json:"id"`
 	DiscordLogin string         `json:"discordLogin"`
-	Tm20PlayerID *int64  `json:"tm20PlayerId"`
-	TmnfPlayerID *int64  `json:"tmnfPlayerId"`
-	Role         *string `json:"role"`
+	Tm20PlayerID *int64  		`json:"tm20PlayerId"`
+	TmnfPlayerID *int64  		`json:"tmnfPlayerId"`
+	Role         *string 		`json:"role"`
 	CreatedAt    time.Time      `json:"createdAt"`
 	UpdatedAt    time.Time      `json:"updatedAt"`
 }
