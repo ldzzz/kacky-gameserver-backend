@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/nats-io/nats.go/micro"
 )
 
 // Error struct that is returned as responses to request
@@ -45,8 +44,8 @@ func updateGameType(v interface{}) {
 	}
 }
 
-func Deserialize(req micro.Request, obj any) error {
-	if err := json.Unmarshal(req.Data(), obj); err != nil {
+func Deserialize(data []byte, obj any) error {
+	if err := json.Unmarshal(data, obj); err != nil {
 		slog.Error("Unable to marshal JSON", "error", err)
 		return RequestError{400, "Bad Request"}
 	}

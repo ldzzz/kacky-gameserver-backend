@@ -122,10 +122,10 @@ type UserMetadatum struct {
 	WebUserID    *int64   		 `json:"webUserId"`
 	TmnfPlayerID *int64   		 `json:"tmnfPlayerId"`
 	Tm20PlayerID *int64   		 `json:"tm20PlayerId"`
-	StreamData   json.RawMessage `json:"streamData"`
-	Tags         json.RawMessage `json:"tags"`
-	Difficulties json.RawMessage `json:"difficulties"`
-	Alarms       json.RawMessage `json:"alarms"`
+	StreamData   *json.RawMessage `json:"streamData"`
+	Tags         *json.RawMessage `json:"tags"`
+	Difficulties *json.RawMessage `json:"difficulties"`
+	Alarms       *json.RawMessage `json:"alarms"`
 	CreatedAt    time.Time       `json:"createdAt"`
 	UpdatedAt    time.Time       `json:"updatedAt"`
 }

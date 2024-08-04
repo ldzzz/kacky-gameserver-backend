@@ -33,7 +33,7 @@ func playerConnect(req micro.Request) {
 	var pd PlayerConnect
 	var err error
 
-	if err = utils.Deserialize(req, &pd); err != nil {
+	if err = utils.Deserialize(req.Data(), &pd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
@@ -69,10 +69,10 @@ func playerConnect(req micro.Request) {
 
 	// patch values
 	combinedPlayerConnectData := struct {
-		dbops.TmPlayer
-		StreamData json.RawMessage `json:"streamData"`
-		Records    []dbops.Finish  `json:"records"`
-	}{*fetchedPlayer, playerMetadata.StreamData, playerFinishes}
+		*dbops.TmPlayer
+		StreamData *json.RawMessage `json:"streamData"`
+		Records    []dbops.Finish   `json:"records"`
+	}{fetchedPlayer, playerMetadata.StreamData, playerFinishes}
 
 	slog.Debug(fmt.Sprintf("Request: %s\nResponse (no stream/records) %s", utils.PrettyPrint(pd), utils.PrettyPrint(fetchedPlayer)))
 	_ = req.RespondJSON(combinedPlayerConnectData)
@@ -82,7 +82,7 @@ func playerSetNickname(req micro.Request) {
 	var pd PlayerNickname
 	var err error
 
-	if err = utils.Deserialize(req, &pd); err != nil {
+	if err = utils.Deserialize(req.Data(), &pd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
@@ -110,9 +110,9 @@ func playerSetNickname(req micro.Request) {
 
 	// patch values
 	combinedPlayerData := struct {
-		dbops.TmPlayer
-		StreamData json.RawMessage `json:"streamData"`
-	}{*fetchedPlayer, playerMetadata.StreamData}
+		*dbops.TmPlayer
+		StreamData *json.RawMessage `json:"streamData"`
+	}{fetchedPlayer, playerMetadata.StreamData}
 
 	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", utils.PrettyPrint(pd), utils.PrettyPrint(combinedPlayerData)))
 	_ = req.RespondJSON(combinedPlayerData)
@@ -122,7 +122,7 @@ func playerAddStreamer(req micro.Request) {
 	var pd PlayerStreamerData
 	var err error
 
-	if err = utils.Deserialize(req, &pd); err != nil {
+	if err = utils.Deserialize(req.Data(), &pd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
@@ -135,11 +135,7 @@ func playerAddStreamer(req micro.Request) {
 	}
 
 	// create/update streamer metadata
-	sd := struct {
-		Platform      string `json:"platform"`
-		StreamerLogin string `json:"streamerLogin"`
-		StreamStatus  bool   `json:"streamStatus"`
-	}{pd.Platform, pd.StreamerLogin, *pd.StreamStatus}
+	sd := PlayerStreamData{&pd.Platform, &pd.StreamerLogin, pd.StreamStatus}
 
 	var streamerData json.RawMessage
 	if streamerData, err = json.Marshal(sd); err != nil {
@@ -175,25 +171,73 @@ func playerAddStreamer(req micro.Request) {
 
 	// patch values
 	combinedPlayerData := struct {
-		dbops.TmPlayer
-		StreamData json.RawMessage `json:"streamData"`
-	}{*fetchedPlayer, playerMetadata.StreamData}
+		*dbops.TmPlayer
+		StreamData *json.RawMessage `json:"streamData"`
+	}{fetchedPlayer, playerMetadata.StreamData}
 
-	slog.Debug(utils.PrettyPrint(pd))
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse %s", utils.PrettyPrint(pd), utils.PrettyPrint(combinedPlayerData)))
 	_ = req.RespondJSON(combinedPlayerData)
 }
 
 func playerStreamStatus(req micro.Request) {
-	var pd PlayerConnect
+	var pd PlayerStreamerStatus
 	var err error
 
-	if err = utils.Deserialize(req, &pd); err != nil {
+	if err = utils.Deserialize(req.Data(), &pd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
 
-	slog.Debug(utils.PrettyPrint(pd))
-	_ = req.RespondJSON(pd)
+	// get the player data
+	var fetchedPlayer *dbops.TmPlayer
+	if fetchedPlayer, err = getPlayer(pd.Login, pd.GameType); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// check if streamer
+	if fetchedPlayer.Role != "streamer" {
+		slog.Info("Not a streamer, how could this happen?")
+		_ = req.RespondJSON(&utils.RequestError{Code: 404, Message: "User doesn't have streamer role"})
+		return
+	}
+
+	// get metadata (to obtain stream data)
+	var playerMetadata *dbops.UserMetadatum
+	if playerMetadata, err = getPlayerMetadata(fetchedPlayer.ID); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	if playerMetadata == nil || playerMetadata.StreamData == nil {
+		slog.Info("Unknown streamer setting status")
+		_ = req.RespondJSON(&utils.RequestError{Code: 404, Message: "User has no stream information"})
+		return
+	}
+
+	// get stream data
+	var sd PlayerStreamData
+	if err = utils.Deserialize(*playerMetadata.StreamData, &sd); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// update stream status
+	sd.StreamStatus = pd.StreamStatus
+	var streamerData json.RawMessage
+	if streamerData, err = json.Marshal(sd); err != nil {
+		slog.Error("Unable to marshal streamer data", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	if err = createUpdateStreamer(pd.GameType, fetchedPlayer.ID, streamerData); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	slog.Debug(fmt.Sprintf("Request: %s", utils.PrettyPrint(pd)))
+	_ = req.RespondJSON(&utils.RequestError{Code: 200, Message: "OK"})
 }
 
 /*

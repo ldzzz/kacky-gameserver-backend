@@ -34,3 +34,9 @@ type PlayerFinish struct {
 	Score     int    `json:"score" validate:"required,gt=0"`
 	GameType  string `json:"gameType" validate:"required,oneof=TmForever Trackmania"`
 }
+
+type PlayerStreamData struct {
+	Platform      *string `json:"platform"`
+	StreamerLogin *string `json:"streamerLogin"`
+	StreamStatus  *bool   `json:"streamStatus"`
+}

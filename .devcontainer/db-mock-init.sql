@@ -17,10 +17,10 @@ CREATE TABLE `user_metadata` (
   `web_user_id` BIGINT UNIQUE,
   `tmnf_player_id` BIGINT UNIQUE,
   `tm20_player_id` BIGINT UNIQUE,
-  `stream_data` JSON NOT NULL DEFAULT "{}",
-  `tags` JSON NOT NULL DEFAULT "{}",
-  `difficulties` JSON NOT NULL DEFAULT "{}",
-  `alarms` JSON NOT NULL DEFAULT "{}",
+  `stream_data` JSON,
+  `tags` JSON,
+  `difficulties` JSON,
+  `alarms` JSON,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
