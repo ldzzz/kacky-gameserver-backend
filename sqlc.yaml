@@ -1,11 +1,11 @@
 version: "2"
 sql:
   - engine: "mysql"
-    queries: "dbops/query.sql"
-    schema: "dbops/schema.sql"
+    queries: "database/query.sql"
+    schema: "database/migrations"
     gen:
       go:
-        package: "dbops"
+        package: "database"
         out: "dbops"
         emit_json_tags: true
         emit_prepared_queries: true

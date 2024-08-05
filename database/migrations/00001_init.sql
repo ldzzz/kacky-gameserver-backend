@@ -1,3 +1,12 @@
+-- +goose Up
+-- +goose StatementBegin
+SELECT 'up SQL query';
+
+
+/*
+* webserver relevant tables
+*/
+
 CREATE TABLE `web_users` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `discord_login` VARCHAR(255) UNIQUE NOT NULL,
@@ -21,12 +30,28 @@ CREATE TABLE `user_metadata` (
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+
+
+CREATE TABLE `api_keys` (
+  `id` bigint(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+/*
+* Gameserver relevant tables
+*/
+
 CREATE TABLE `tm_players` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `login` VARCHAR(255) NOT NULL,
   `game_type` VARCHAR(255) NOT NULL,
   `zone` VARCHAR(255),
   `total_finishes` INT NOT NULL DEFAULT 0,
+  `total_playtime` INT NOT NULL DEFAULT 0,
   `nickname` VARCHAR(255),
   `role` VARCHAR(255) NOT NULL DEFAULT 'user',
   `is_muted` TINYINT NOT NULL DEFAULT 0,
@@ -121,14 +146,6 @@ CREATE TABLE `event_player_edition_stats` (
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE `api_keys` (
-  `id` bigint(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `key` varchar(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 CREATE TABLE `servers` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
@@ -153,20 +170,28 @@ ALTER TABLE `events` ADD CONSTRAINT `UQ_events_edition_gametype` UNIQUE (`editio
 ALTER TABLE `player_edition_stats` ADD CONSTRAINT `UQ_player_edition_stats_playerid_eventid` UNIQUE (`player_id`, `event_id`);
 ALTER TABLE `event_player_edition_stats` ADD CONSTRAINT `UQ_event_player_edition_stats_playerid_eventid` UNIQUE (`player_id`, `event_id`);
 
+
 /*
 # Foreign Key definitions
 */
 ALTER TABLE `web_users` ADD FOREIGN KEY (`tm20_player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `web_users` ADD FOREIGN KEY (`tmnf_player_id`) REFERENCES `tm_players` (`id`);
-ALTER TABLE `world_records` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`);
-ALTER TABLE `finishes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`);
+ALTER TABLE `world_records` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
+ALTER TABLE `finishes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
 ALTER TABLE `finishes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `event_finishes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
-ALTER TABLE `event_finishes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`);
-ALTER TABLE `maps` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`);
+ALTER TABLE `event_finishes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
+ALTER TABLE `maps` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE;
 ALTER TABLE `player_edition_stats` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
-ALTER TABLE `player_edition_stats` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`);
+ALTER TABLE `player_edition_stats` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE;
 ALTER TABLE `event_player_edition_stats` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
-ALTER TABLE `event_player_edition_stats` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`);
-ALTER TABLE `karma_votes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`);
+ALTER TABLE `event_player_edition_stats` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE;
+ALTER TABLE `karma_votes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
 ALTER TABLE `karma_votes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
+
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+SELECT 'down SQL query';
+-- +goose StatementEnd

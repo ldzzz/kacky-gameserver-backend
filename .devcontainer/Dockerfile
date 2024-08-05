@@ -4,6 +4,7 @@ ARG UID
 ARG GID
 ARG UNAME
 ARG MARIADBVER
+ARG SEEDS_MIGRATION_DIR
 
 # Create docker user
 RUN groupadd -g ${GID} ${UNAME} \
@@ -29,6 +30,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 
 # Cleanup
 RUN apt -y clean \
@@ -43,6 +45,11 @@ RUN chown -R ${UNAME} $GOPATH \
 # Switch to user
 USER ${UNAME}
 RUN echo "export PATH=/home/${UNAME}/.local/bin:${PATH}" >> ~/.bashrc
+
+# apply migrations
+RUN goose up
+# apply mock data without versioning
+RUN goose -dir ${SEEDS_MIGRATION_DIR} --no-versioning up
 
 # Start shell
 ENTRYPOINT [ "/bin/bash" ]
