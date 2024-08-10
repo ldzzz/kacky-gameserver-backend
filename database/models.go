@@ -5,7 +5,6 @@
 package database
 
 import (
-	"database/sql"
 	"encoding/json"
 	"time"
 )
@@ -96,7 +95,7 @@ type Server struct {
 	ID         int64         `json:"id"`
 	Name       string        `json:"name"`
 	GameType   string        `json:"gameType"`
-	Difficulty sql.NullInt32 `json:"difficulty"`
+	Difficulty *int32 `json:"difficulty"`
 	Timelimit  int32         `json:"timelimit"`
 	Online     int8          `json:"online"`
 	CreatedAt  time.Time     `json:"createdAt"`
@@ -107,9 +106,9 @@ type TmPlayer struct {
 	ID            int64          `json:"id"`
 	Login         string         `json:"login"`
 	GameType      string         `json:"gameType"`
-	Zone          sql.NullString `json:"zone"`
+	Zone          *string `json:"zone"`
 	TotalPlaytime int32          `json:"totalPlaytime"`
-	Nickname      sql.NullString `json:"nickname"`
+	Nickname      *string `json:"nickname"`
 	Role          string         `json:"role"`
 	IsMuted       int8           `json:"isMuted"`
 	IsBlacklisted int8           `json:"isBlacklisted"`
@@ -119,13 +118,13 @@ type TmPlayer struct {
 
 type UserMetadatum struct {
 	ID           int64           `json:"id"`
-	WebUserID    sql.NullInt64   `json:"webUserId"`
-	TmnfPlayerID sql.NullInt64   `json:"tmnfPlayerId"`
-	Tm20PlayerID sql.NullInt64   `json:"tm20PlayerId"`
-	StreamData   json.RawMessage `json:"streamData"`
-	Tags         json.RawMessage `json:"tags"`
-	Difficulties json.RawMessage `json:"difficulties"`
-	Alarms       json.RawMessage `json:"alarms"`
+	WebUserID    *int64   `json:"webUserId"`
+	TmnfPlayerID *int64   `json:"tmnfPlayerId"`
+	Tm20PlayerID *int64   `json:"tm20PlayerId"`
+	StreamData   *json.RawMessage `json:"streamData"`
+	Tags         *json.RawMessage `json:"tags"`
+	Difficulties *json.RawMessage `json:"difficulties"`
+	Alarms       *json.RawMessage `json:"alarms"`
 	CreatedAt    time.Time       `json:"createdAt"`
 	UpdatedAt    time.Time       `json:"updatedAt"`
 }
@@ -133,9 +132,9 @@ type UserMetadatum struct {
 type WebUser struct {
 	ID           int64          `json:"id"`
 	DiscordLogin string         `json:"discordLogin"`
-	Tm20PlayerID sql.NullInt64  `json:"tm20PlayerId"`
-	TmnfPlayerID sql.NullInt64  `json:"tmnfPlayerId"`
-	Role         sql.NullString `json:"role"`
+	Tm20PlayerID *int64  `json:"tm20PlayerId"`
+	TmnfPlayerID *int64  `json:"tmnfPlayerId"`
+	Role         *string `json:"role"`
 	CreatedAt    time.Time      `json:"createdAt"`
 	UpdatedAt    time.Time      `json:"updatedAt"`
 }

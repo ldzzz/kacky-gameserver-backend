@@ -1,4 +1,4 @@
-package players
+package player
 
 import (
 	"context"
@@ -53,7 +53,7 @@ func getPlayerCombined(login string, gameType string, includeMetadata bool, incl
 	// get the player data to return on connect
 	var fetchedPlayer *dbops.TmPlayer
 	var playerMetadata *dbops.UserMetadatum
-	var playerFinishes []dbops.Finish
+	var playerFinishes []dbops.GetPlayerFinishesRow
 	var err error
 
 	if fetchedPlayer, err = getPlayer(login, gameType); err != nil {
@@ -80,8 +80,8 @@ func getPlayerCombined(login string, gameType string, includeMetadata bool, incl
 	if includeMetadata && includeFinishes {
 		combinedPlayerData = struct {
 			*dbops.TmPlayer
-			StreamData *json.RawMessage `json:"streamData"`
-			Records    []dbops.Finish   `json:"records"`
+			StreamData *json.RawMessage             `json:"streamData"`
+			Records    []dbops.GetPlayerFinishesRow `json:"records"`
 		}{fetchedPlayer, playerMetadata.StreamData, playerFinishes}
 	} else if includeMetadata {
 		combinedPlayerData = struct {
@@ -91,7 +91,7 @@ func getPlayerCombined(login string, gameType string, includeMetadata bool, incl
 	} else if includeFinishes {
 		combinedPlayerData = struct {
 			*dbops.TmPlayer
-			Records []dbops.Finish `json:"records"`
+			Records []dbops.GetPlayerFinishesRow `json:"records"`
 		}{fetchedPlayer, playerFinishes}
 	} else {
 		panic("No combined data needed, you should use getPlayer()")
@@ -108,15 +108,8 @@ func processPlayerFinish(pd PlayerFinish) error {
 		return err
 	}
 
-	// get the map data
-	var mapData dbops.Map
-	if mapData, err = config.ENV.DB.FetchMapByUid(context.Background(), pd.MapUid); err != nil {
-		slog.Error("Couldn't retrieve map data", "error", err)
-		return err
-	}
-
 	// store or update player finish data
-	if err = config.ENV.DB.CreateUpdatePlayerMapFinish(context.Background(), dbops.CreateUpdatePlayerMapFinishParams{MapID: mapData.ID, PlayerID: fetchedPlayer.ID, Score: pd.Score, LastFinishedAt: pd.Timestamp}); err != nil {
+	if err = config.ENV.DB.CreateUpdatePlayerMapFinish(context.Background(), dbops.CreateUpdatePlayerMapFinishParams{MapUid: pd.MapUid, PlayerID: fetchedPlayer.ID, Score: pd.Score, LastImprovedAt: pd.Timestamp}); err != nil {
 		slog.Error("Couldn't update player finish data", "error", err)
 		return err
 	}

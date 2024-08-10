@@ -1,4 +1,4 @@
-package players
+package player
 
 import (
 	"context"
@@ -15,15 +15,15 @@ import (
 
 func InitServices() {
 	srv, _ := micro.AddService(config.ENV.NATS, micro.Config{
-		Name:    "PlayersService",
+		Name:    "PlayerService",
 		Version: "1.0.0",
 	})
-	playersGroup := srv.AddGroup("player")
-	_ = playersGroup.AddEndpoint("connect", micro.HandlerFunc(playerConnect))
-	_ = playersGroup.AddEndpoint("finish", micro.HandlerFunc(playerFinish))
-	_ = playersGroup.AddEndpoint("setName", micro.HandlerFunc(playerSetNickname))
-	_ = playersGroup.AddEndpoint("addStreamer", micro.HandlerFunc(playerAddStreamer))
-	_ = playersGroup.AddEndpoint("setStreamStatus", micro.HandlerFunc(playerStreamStatus))
+	playerGroup := srv.AddGroup("player")
+	_ = playerGroup.AddEndpoint("connect", micro.HandlerFunc(playerConnect))
+	_ = playerGroup.AddEndpoint("finish", micro.HandlerFunc(playerFinish))
+	_ = playerGroup.AddEndpoint("setName", micro.HandlerFunc(playerSetNickname))
+	_ = playerGroup.AddEndpoint("addStreamer", micro.HandlerFunc(playerAddStreamer))
+	_ = playerGroup.AddEndpoint("setStreamStatus", micro.HandlerFunc(playerStreamStatus))
 	//_ = playersGroup.AddEndpoint("setTags", micro.HandlerFunc(playerSetTags))
 
 	slog.Info(fmt.Sprintf("Initialized %s", srv.Info()))

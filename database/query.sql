@@ -15,7 +15,8 @@ SELECT * FROM user_metadata
 WHERE tm20_player_id = ? OR tmnf_player_id = ?;
 
 -- name: GetPlayerFinishes :many
-SELECT finishes.map_uid, finishes.score, finishes.finish_counter, finishes.created_at, finishes.last_improved_at finishes FROM finishes
+SELECT finishes.map_uid, maps.number, finishes.score, finishes.finish_counter, finishes.created_at, finishes.last_improved_at FROM finishes
+JOIN maps ON finishes.map_uid = maps.map_uid
 JOIN tm_players ON finishes.player_id = tm_players.id
 WHERE tm_players.login = ? AND tm_players.game_type = ?;
 

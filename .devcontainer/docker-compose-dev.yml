@@ -39,8 +39,6 @@ services:
     container_name: kackyDB
     restart: unless-stopped
     env_file: ".env.dev"
-    volumes:
-      - ${PWD}/.devcontainer/db-mock-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test:
         [

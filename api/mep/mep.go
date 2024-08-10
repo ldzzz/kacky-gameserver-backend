@@ -1,4 +1,4 @@
-package maps
+package mep
 
 import (
 	"fmt"
@@ -18,8 +18,8 @@ func InitServices() {
 		Version: "1.0.0",
 	})
 	playersGroup := srv.AddGroup("map")
-	_ = playersGroup.AddEndpoint("mapstart", micro.HandlerFunc(mapStart))
-	_ = playersGroup.AddEndpoint("mapend", micro.HandlerFunc(mapEnd))
+	_ = playersGroup.AddEndpoint("mapStart", micro.HandlerFunc(mapStart))
+	_ = playersGroup.AddEndpoint("mapEnd", micro.HandlerFunc(mapEnd))
 
 	slog.Info(fmt.Sprintf("Initialized %s", srv.Info()))
 }

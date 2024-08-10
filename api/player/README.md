@@ -19,11 +19,11 @@ For routes of other roles, please refer to (TBD - admin channel).
 Here is a short overview of what commands are currently supported by this channel.
 Detailed description of each route with examples can be found in their respective sections thereafter.
 
-- [`player.connect`](#player.connect)
-- [`player.setName`](#player.setName)
-- [`player.finish`](#player.finish)
-- [`player.addStreamer`](#player.addStreamer)
-- [`player.setStreamStatus`](#player.setStreamStatus)
+- [`player.connect`](#playerconnect)
+- [`player.setName`](#playersetname)
+- [`player.finish`](#playerfinish)
+- [`player.addStreamer`](#playeraddstreamer)
+- [`player.setStreamStatus`](#playersetstreamstatus)
 
 ---
 
@@ -326,6 +326,30 @@ The gameserver controller shall report status accordingly upon response receptio
 <u>**Response**</u>
 
 ```json
+{
+   "id":30,
+   "login":"p8",
+   "gameType":"KK",
+   "zone":"World|Europe|Croatia",
+   "totalPlaytime":0,
+   "nickname":"el-djinn",
+   "role":"user",
+   "isMuted":0,
+   "isBlacklisted":0,
+   "createdAt":"2024-08-10T10:42:59Z",
+   "updatedAt":"2024-08-10T10:42:59Z",
+   "streamData":null,
+   "records":[
+      {
+         "mapUId":"string",
+         "number":number,
+         "score":12344,
+         "finishCounter":2,
+         "createdAt":"2024-08-10T15:00:34Z",
+         "lastImprovedAt":"2024-08-10T15:00:40Z"
+      }
+   ]
+}
 
 -------------------------------------------------------------------------------
 
@@ -334,14 +358,93 @@ Error Response
    "code": number,                  # HTTP error code (404, 400, 500, etc.)
    "message": "Error message"
 }
+
 ```
 
 ### <u>**Example responses**</u>
 
 <details>
-  <summary>xxx</summary>
+  <summary>Request: TMNF player</summary>
 
 ```json
+{
+   "login":"el-djinn",
+   "gameType":"TmForever",
+   "mapUid":"string",
+   "timestamp":"2024-08-10T21:10:12.390824Z",
+   "score":12345
+}
+```
+
+</details>
+
+<details>
+  <summary>Request: TM20 player</summary>
+
+```json
+{
+   "login":"I7rI7jAga6C4tGAe5OTDoyLF2fh",
+   "gameType":"Trackmania",
+   "mapUid":"6y_26o7fxz0Es3t0e0EPBE7vF_k",
+   "timestamp":"2024-08-10T21:10:12.390824Z",
+   "score":12345
+}
+```
+
+</details>
+
+<details>
+  <summary>Response: Success</summary>
+
+```json
+{
+   "id":20,
+   "login":"el-djinn",
+   "gameType":"KK",
+   "zone":"World|Europe|Croatia",
+   "totalPlaytime":0,
+   "nickname":"el-djinn",
+   "role":"streamer",
+   "isMuted":0,
+   "isBlacklisted":0,
+   "createdAt":"2024-08-10T20:27:55Z",
+   "updatedAt":"2024-08-10T20:29:17Z",
+   "streamData":{
+      "platform":"twitch.tv",
+      "streamerLogin":"bla1",
+      "streamStatus":true
+   },
+   "records":[
+      {
+         "mapUid":"I7rI7jAga6C4tGAe5OTDoyLF2fh",
+         "number":5,
+         "score":12345,
+         "finishCounter":1,
+         "createdAt":"2024-08-10T20:29:51Z",
+         "lastImprovedAt":"2024-08-10T20:29:51Z"
+      },
+      {
+         "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+         "number":14,
+         "score":12343,
+         "finishCounter":6,
+         "createdAt":"2024-08-10T21:03:31Z",
+         "lastImprovedAt":"2024-08-10T21:03:43Z"
+      }
+   ]
+}
+```
+
+</details>
+
+<details>
+  <summary>Response: Error</summary>
+
+```json
+{
+   "code": 500,
+   "message": "Internal Server Error
+}
 ```
 
 </details>

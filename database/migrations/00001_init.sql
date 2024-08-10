@@ -169,7 +169,7 @@ ALTER TABLE `event_player_edition_stats` ADD CONSTRAINT `UQ_event_player_edition
 */
 ALTER TABLE `web_users` ADD FOREIGN KEY (`tm20_player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `web_users` ADD FOREIGN KEY (`tmnf_player_id`) REFERENCES `tm_players` (`id`);
-ALTER TABLE `world_records` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
+ALTER TABLE `world_records` ADD FOREIGN KEY (`map_uid`) REFERENCES `maps` (`map_uid`) ON DELETE CASCADE;
 ALTER TABLE `finishes` ADD FOREIGN KEY (`map_uid`) REFERENCES `maps` (`map_uid`) ON DELETE CASCADE;
 ALTER TABLE `finishes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `event_finishes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);

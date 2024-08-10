@@ -179,7 +179,8 @@ func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (TmPlayer,
 }
 
 const getPlayerFinishes = `-- name: GetPlayerFinishes :many
-SELECT finishes.map_uid, finishes.score, finishes.finish_counter, finishes.created_at, finishes.last_improved_at finishes FROM finishes
+SELECT finishes.map_uid, maps.number, finishes.score, finishes.finish_counter, finishes.created_at, finishes.last_improved_at FROM finishes
+JOIN maps ON finishes.map_uid = maps.map_uid
 JOIN tm_players ON finishes.player_id = tm_players.id
 WHERE tm_players.login = ? AND tm_players.game_type = ?
 `
@@ -190,11 +191,12 @@ type GetPlayerFinishesParams struct {
 }
 
 type GetPlayerFinishesRow struct {
-	MapUid        string    `json:"mapUid"`
-	Score         int32     `json:"score"`
-	FinishCounter int32     `json:"finishCounter"`
-	CreatedAt     time.Time `json:"createdAt"`
-	Finishes      time.Time `json:"finishes"`
+	MapUid         string    `json:"mapUid"`
+	Number         int32     `json:"number"`
+	Score          int32     `json:"score"`
+	FinishCounter  int32     `json:"finishCounter"`
+	CreatedAt      time.Time `json:"createdAt"`
+	LastImprovedAt time.Time `json:"lastImprovedAt"`
 }
 
 func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesParams) ([]GetPlayerFinishesRow, error) {
@@ -208,10 +210,11 @@ func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesPa
 		var i GetPlayerFinishesRow
 		if err := rows.Scan(
 			&i.MapUid,
+			&i.Number,
 			&i.Score,
 			&i.FinishCounter,
 			&i.CreatedAt,
-			&i.Finishes,
+			&i.LastImprovedAt,
 		); err != nil {
 			return nil, err
 		}
