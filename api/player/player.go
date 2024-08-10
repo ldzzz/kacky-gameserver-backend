@@ -20,7 +20,7 @@ func InitServices() {
 	})
 	playerGroup := srv.AddGroup("player")
 	_ = playerGroup.AddEndpoint("connect", micro.HandlerFunc(playerConnect))
-	_ = playerGroup.AddEndpoint("finish", micro.HandlerFunc(playerFinish))
+	_ = playerGroup.AddEndpoint("finish", micro.HandlerFunc(playerFinish)) // TODO: consider if rank should be calculated and included into the response or not
 	_ = playerGroup.AddEndpoint("setName", micro.HandlerFunc(playerSetNickname))
 	_ = playerGroup.AddEndpoint("addStreamer", micro.HandlerFunc(playerAddStreamer))
 	_ = playerGroup.AddEndpoint("setStreamStatus", micro.HandlerFunc(playerStreamStatus))
