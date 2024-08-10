@@ -1,7 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
-SELECT 'up SQL query';
-
 /*
 # player_edition_stats mock
 */
@@ -227,9 +225,8 @@ INSERT INTO karma_votes (map_id, player_id, vote) VALUES (40, 19, 1);
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
-
-TRUNCATE karma_votes;
-TRUNCATE player_edition_stats;
-
+DELETE FROM karma_votes;
+ALTER TABLE karma_votes AUTO_INCREMENT = 1;
+DELETE FROM player_edition_stats;
+ALTER TABLE player_edition_stats AUTO_INCREMENT = 1;
 -- +goose StatementEnd

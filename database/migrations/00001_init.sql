@@ -1,8 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
-SELECT 'up SQL query';
-
-
 /*
 * webserver relevant tables
 */
@@ -30,8 +27,6 @@ CREATE TABLE `user_metadata` (
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-
-
 CREATE TABLE `api_keys` (
   `id` bigint(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `key` varchar(255) NOT NULL,
@@ -50,7 +45,6 @@ CREATE TABLE `tm_players` (
   `login` VARCHAR(255) NOT NULL,
   `game_type` VARCHAR(255) NOT NULL,
   `zone` VARCHAR(255),
-  `total_finishes` INT NOT NULL DEFAULT 0,
   `total_playtime` INT NOT NULL DEFAULT 0,
   `nickname` VARCHAR(255),
   `role` VARCHAR(255) NOT NULL DEFAULT 'user',
@@ -68,7 +62,6 @@ CREATE TABLE `maps` (
   `number` INT NOT NULL,
   `author` VARCHAR(255) NOT NULL,
   `author_time` INT NOT NULL,
-  `total_finishes` INT NOT NULL DEFAULT 0,
   `total_playtime` INT NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -76,7 +69,7 @@ CREATE TABLE `maps` (
 
 CREATE TABLE `karma_votes` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `map_id` BIGINT NOT NULL,
+  `map_uid` VARCHAR(255) NOT NULL,
   `player_id` BIGINT NOT NULL,
   `vote` DOUBLE NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -85,7 +78,7 @@ CREATE TABLE `karma_votes` (
 
 CREATE TABLE `world_records` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `map_id` BIGINT UNIQUE NOT NULL,
+  `map_uid` VARCHAR(255) UNIQUE NOT NULL,
   `wr_holder` VARCHAR(255) NOT NULL,
   `score` INT NOT NULL,
   `source` VARCHAR(255) NOT NULL,
@@ -96,24 +89,24 @@ CREATE TABLE `world_records` (
 
 CREATE TABLE `finishes` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `map_id` BIGINT NOT NULL,
+  `map_uid` VARCHAR(255) NOT NULL,
   `player_id` BIGINT NOT NULL,
   `score` INT NOT NULL,
   `finish_counter` INT NOT NULL DEFAULT 1,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `last_finished_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `last_improved_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE `event_finishes` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `map_id` BIGINT NOT NULL,
+  `map_uid` VARCHAR(255) NOT NULL,
   `player_id` BIGINT NOT NULL,
   `score` INT NOT NULL,
   `finish_counter` INT NOT NULL DEFAULT 1,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `last_finished_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `last_improved_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE `events` (
@@ -163,9 +156,9 @@ CREATE TABLE `servers` (
 */
 ALTER TABLE `tm_players` ADD CONSTRAINT `UQ_tm_players_login_gametype` UNIQUE (`login`, `game_type`);
 ALTER TABLE `maps` ADD CONSTRAINT `UQ_maps_index_uuid_eventid` UNIQUE (`map_uid`, `event_id`);
-ALTER TABLE `karma_votes` ADD CONSTRAINT `UQ_karma_votes_mapid_playerid` UNIQUE (`map_id`, `player_id`);
-ALTER TABLE `finishes` ADD CONSTRAINT `UQ_finishes_mapid_playerid` UNIQUE (`map_id`, `player_id`);
-ALTER TABLE `event_finishes` ADD CONSTRAINT `UQ_event_finishes_mapid_playerid` UNIQUE (`map_id`, `player_id`);
+ALTER TABLE `karma_votes` ADD CONSTRAINT `UQ_karma_votes_mapid_playerid` UNIQUE (`map_uid`, `player_id`);
+ALTER TABLE `finishes` ADD CONSTRAINT `UQ_finishes_mapid_playerid` UNIQUE (`map_uid`, `player_id`);
+ALTER TABLE `event_finishes` ADD CONSTRAINT `UQ_event_finishes_mapid_playerid` UNIQUE (`map_uid`, `player_id`);
 ALTER TABLE `events` ADD CONSTRAINT `UQ_events_edition_gametype` UNIQUE (`edition`, `game_type`);
 ALTER TABLE `player_edition_stats` ADD CONSTRAINT `UQ_player_edition_stats_playerid_eventid` UNIQUE (`player_id`, `event_id`);
 ALTER TABLE `event_player_edition_stats` ADD CONSTRAINT `UQ_event_player_edition_stats_playerid_eventid` UNIQUE (`player_id`, `event_id`);
@@ -177,21 +170,20 @@ ALTER TABLE `event_player_edition_stats` ADD CONSTRAINT `UQ_event_player_edition
 ALTER TABLE `web_users` ADD FOREIGN KEY (`tm20_player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `web_users` ADD FOREIGN KEY (`tmnf_player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `world_records` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
-ALTER TABLE `finishes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
+ALTER TABLE `finishes` ADD FOREIGN KEY (`map_uid`) REFERENCES `maps` (`map_uid`) ON DELETE CASCADE;
 ALTER TABLE `finishes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `event_finishes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
-ALTER TABLE `event_finishes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
+ALTER TABLE `event_finishes` ADD FOREIGN KEY (`map_uid`) REFERENCES `maps` (`map_uid`) ON DELETE CASCADE;
 ALTER TABLE `maps` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE;
 ALTER TABLE `player_edition_stats` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `player_edition_stats` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE;
 ALTER TABLE `event_player_edition_stats` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
 ALTER TABLE `event_player_edition_stats` ADD FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE;
-ALTER TABLE `karma_votes` ADD FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE;
+ALTER TABLE `karma_votes` ADD FOREIGN KEY (`map_uid`) REFERENCES `maps` (`map_uid`) ON DELETE CASCADE;
 ALTER TABLE `karma_votes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` (`id`);
-
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+
 -- +goose StatementEnd

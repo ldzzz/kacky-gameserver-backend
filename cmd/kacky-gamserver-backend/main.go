@@ -11,7 +11,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/ldzzz/kacky-gameserver-backend/api/players"
 	"github.com/ldzzz/kacky-gameserver-backend/config"
-	dbops "github.com/ldzzz/kacky-gameserver-backend/dbops"
+	dbops "github.com/ldzzz/kacky-gameserver-backend/database"
 	"github.com/nats-io/nats.go"
 )
 
@@ -69,9 +69,11 @@ func Run(cfg *config.Config) error {
 		CheckConnLiveness:    true,
 		AllowNativePasswords: true,
 		ParseTime:            true,
+		Loc:                  time.UTC,
 	}
 
 	// Get a database handle.
+	fmt.Printf("%s", dbcfg.FormatDSN())
 	if db, err = sql.Open("mysql", dbcfg.FormatDSN()); err != nil {
 		return err
 	}

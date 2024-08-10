@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/ldzzz/kacky-gameserver-backend/config"
-	"github.com/ldzzz/kacky-gameserver-backend/dbops"
+	dbops "github.com/ldzzz/kacky-gameserver-backend/database"
 	"github.com/ldzzz/kacky-gameserver-backend/internal/utils"
 )
 
@@ -47,4 +47,79 @@ func createUpdateStreamer(gameType string, id int64, streamData json.RawMessage)
 	}
 	return nil
 
+}
+
+func getPlayerCombined(login string, gameType string, includeMetadata bool, includeFinishes bool) (*any, error) {
+	// get the player data to return on connect
+	var fetchedPlayer *dbops.TmPlayer
+	var playerMetadata *dbops.UserMetadatum
+	var playerFinishes []dbops.Finish
+	var err error
+
+	if fetchedPlayer, err = getPlayer(login, gameType); err != nil {
+		return nil, err
+	}
+
+	// get metadata (to obtain stream data)
+	if includeMetadata {
+		if playerMetadata, err = getPlayerMetadata(fetchedPlayer.ID); err != nil {
+			slog.Error("Failed to get player metadata", "error", err)
+			return nil, err
+		}
+	}
+
+	//get finishes
+	if includeFinishes {
+		if playerFinishes, err = config.ENV.DB.GetPlayerFinishes(context.Background(), dbops.GetPlayerFinishesParams{Login: login, GameType: gameType}); err != nil && err != sql.ErrNoRows {
+			slog.Error("Failed to get player finishes", "error", err)
+			return nil, &utils.RequestError{Code: 500, Message: "Internal Server Error"}
+		}
+	}
+
+	var combinedPlayerData any
+	if includeMetadata && includeFinishes {
+		combinedPlayerData = struct {
+			*dbops.TmPlayer
+			StreamData *json.RawMessage `json:"streamData"`
+			Records    []dbops.Finish   `json:"records"`
+		}{fetchedPlayer, playerMetadata.StreamData, playerFinishes}
+	} else if includeMetadata {
+		combinedPlayerData = struct {
+			*dbops.TmPlayer
+			StreamData *json.RawMessage `json:"streamData"`
+		}{fetchedPlayer, playerMetadata.StreamData}
+	} else if includeFinishes {
+		combinedPlayerData = struct {
+			*dbops.TmPlayer
+			Records []dbops.Finish `json:"records"`
+		}{fetchedPlayer, playerFinishes}
+	} else {
+		panic("No combined data needed, you should use getPlayer()")
+	}
+
+	return &combinedPlayerData, nil
+}
+
+func processPlayerFinish(pd PlayerFinish) error {
+	var err error
+	// get the player data
+	var fetchedPlayer *dbops.TmPlayer
+	if fetchedPlayer, err = getPlayer(pd.Login, pd.GameType); err != nil {
+		return err
+	}
+
+	// get the map data
+	var mapData dbops.Map
+	if mapData, err = config.ENV.DB.FetchMapByUid(context.Background(), pd.MapUid); err != nil {
+		slog.Error("Couldn't retrieve map data", "error", err)
+		return err
+	}
+
+	// store or update player finish data
+	if err = config.ENV.DB.CreateUpdatePlayerMapFinish(context.Background(), dbops.CreateUpdatePlayerMapFinishParams{MapID: mapData.ID, PlayerID: fetchedPlayer.ID, Score: pd.Score, LastFinishedAt: pd.Timestamp}); err != nil {
+		slog.Error("Couldn't update player finish data", "error", err)
+		return err
+	}
+
+	return nil
 }
