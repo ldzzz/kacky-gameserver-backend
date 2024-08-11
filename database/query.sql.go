@@ -149,6 +149,50 @@ func (q *Queries) FetchPlayerMapFinish(ctx context.Context, arg FetchPlayerMapFi
 	return i, err
 }
 
+const getMapSortedRecords = `-- name: GetMapSortedRecords :many
+SELECT tm_players.login, tm_players.nickname, finishes.score, finishes.finish_counter, finishes.last_improved_at FROM finishes
+JOIN tm_players ON tm_players.id = finishes.player_id
+WHERE finishes.map_uid = ?
+ORDER BY finishes.score ASC, finishes.last_improved_at ASC
+`
+
+type GetMapSortedRecordsRow struct {
+	Login          string         `json:"login"`
+	Nickname       *string 		  `json:"nickname"`
+	Score          int32          `json:"score"`
+	FinishCounter  int32          `json:"finishCounter"`
+	LastImprovedAt time.Time      `json:"lastImprovedAt"`
+}
+
+func (q *Queries) GetMapSortedRecords(ctx context.Context, mapUid string) ([]GetMapSortedRecordsRow, error) {
+	rows, err := q.query(ctx, q.getMapSortedRecordsStmt, getMapSortedRecords, mapUid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMapSortedRecordsRow
+	for rows.Next() {
+		var i GetMapSortedRecordsRow
+		if err := rows.Scan(
+			&i.Login,
+			&i.Nickname,
+			&i.Score,
+			&i.FinishCounter,
+			&i.LastImprovedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPlayer = `-- name: GetPlayer :one
 SELECT id, login, game_type, zone, total_playtime, nickname, role, is_muted, is_blacklisted, created_at, updated_at FROM tm_players
 WHERE login = ? AND game_type = ?

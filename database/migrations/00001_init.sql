@@ -46,7 +46,7 @@ CREATE TABLE `tm_players` (
   `game_type` VARCHAR(255) NOT NULL,
   `zone` VARCHAR(255),
   `total_playtime` INT NOT NULL DEFAULT 0,
-  `nickname` VARCHAR(255),
+  `nickname` VARCHAR(255) NOT NULL,
   `role` VARCHAR(255) NOT NULL DEFAULT 'user',
   `is_muted` TINYINT NOT NULL DEFAULT 0,
   `is_blacklisted` TINYINT NOT NULL DEFAULT 0,

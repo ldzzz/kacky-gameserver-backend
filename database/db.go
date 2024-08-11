@@ -42,6 +42,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.fetchPlayerMapFinishStmt, err = db.PrepareContext(ctx, fetchPlayerMapFinish); err != nil {
 		return nil, fmt.Errorf("error preparing query FetchPlayerMapFinish: %w", err)
 	}
+	if q.getMapSortedRecordsStmt, err = db.PrepareContext(ctx, getMapSortedRecords); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMapSortedRecords: %w", err)
+	}
 	if q.getPlayerStmt, err = db.PrepareContext(ctx, getPlayer); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayer: %w", err)
 	}
@@ -87,6 +90,11 @@ func (q *Queries) Close() error {
 	if q.fetchPlayerMapFinishStmt != nil {
 		if cerr := q.fetchPlayerMapFinishStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing fetchPlayerMapFinishStmt: %w", cerr)
+		}
+	}
+	if q.getMapSortedRecordsStmt != nil {
+		if cerr := q.getMapSortedRecordsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMapSortedRecordsStmt: %w", cerr)
 		}
 	}
 	if q.getPlayerStmt != nil {
@@ -154,6 +162,7 @@ type Queries struct {
 	createUpdateStreamDataTMNFStmt  *sql.Stmt
 	fetchMapByUidStmt               *sql.Stmt
 	fetchPlayerMapFinishStmt        *sql.Stmt
+	getMapSortedRecordsStmt         *sql.Stmt
 	getPlayerStmt                   *sql.Stmt
 	getPlayerFinishesStmt           *sql.Stmt
 	getPlayerMetadataStmt           *sql.Stmt
@@ -170,6 +179,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createUpdateStreamDataTMNFStmt:  q.createUpdateStreamDataTMNFStmt,
 		fetchMapByUidStmt:               q.fetchMapByUidStmt,
 		fetchPlayerMapFinishStmt:        q.fetchPlayerMapFinishStmt,
+		getMapSortedRecordsStmt:         q.getMapSortedRecordsStmt,
 		getPlayerStmt:                   q.getPlayerStmt,
 		getPlayerFinishesStmt:           q.getPlayerFinishesStmt,
 		getPlayerMetadataStmt:           q.getPlayerMetadataStmt,

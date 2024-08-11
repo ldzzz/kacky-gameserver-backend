@@ -197,17 +197,32 @@ Error Response
 
 ### `server.mapRecords`
 
-The route is called by gameserver controller whenever a player finishes a map. The backend will process and update relevant finish data and increment the finish counter of the player.
-The gameserver controller shall report status accordingly upon response reception (new finish, pb, non-pb).
+The route is called by gameserver controller whenever they want to obtain map records for a specific map.
+Backend expects a mapUID and in return it returns sorted records (lowest to highest score) and additionally sorts by date finished last,
+so that players who finished a map first are ordered above the ones that finished it later with the same score.
 
 <u>**Request**:</u>
 
 ```json
+{
+   "mapUid": "string"
+}
 ```
 
 <u>**Response**</u>
 
 ```json
+[
+   {
+      "login":"string",
+      "nickname":"string",
+      "score":number,
+      "finishCounter":number,
+      "lastImprovedAt":"datetime string iso8601 (UTC)"
+   },
+   ...
+]
+
 
 -------------------------------------------------------------------------------
 
@@ -225,6 +240,9 @@ Error Response
   <summary>Request: Example</summary>
 
 ```json
+{
+   "mapUid": "6ktPCqLADXXuy5LaOLTzktaGlKf"
+}
 ```
 
 </details>
@@ -233,6 +251,36 @@ Error Response
   <summary>Response: Success</summary>
 
 ```json
+[
+   {
+      "login":"p7",
+      "nickname":"el-djinn",
+      "score":12343,
+      "finishCounter":6,
+      "lastImprovedAt":"2024-08-10T21:03:43Z"
+   },
+   {
+      "login":"p8",
+      "nickname":"el-djinn",
+      "score":12345,
+      "finishCounter":1,
+      "lastImprovedAt":"2024-08-11T13:47:14Z"
+   },
+   {
+      "login":"*fakeplayer1*",
+      "nickname":"player1",
+      "score":52255,
+      "finishCounter":17,
+      "lastImprovedAt":"2024-08-10T19:48:22Z"
+   },
+   {
+      "login":"*fakeplayer2*",
+      "nickname":"player2",
+      "score":94283,
+      "finishCounter":14,
+      "lastImprovedAt":"2024-08-10T19:48:22Z"
+   }
+]
 ```
 
 </details>

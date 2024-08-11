@@ -53,3 +53,9 @@ INSERT INTO finishes (
   ?,?,?,?
 )
 ON DUPLICATE KEY UPDATE finish_counter=finish_counter+1,last_improved_at=if(score > VALUES(score), VALUES(last_improved_at), last_improved_at),score=LEAST(score, VALUES(score));
+
+-- name: GetMapSortedRecords :many
+SELECT tm_players.login, tm_players.nickname, finishes.score, finishes.finish_counter, finishes.last_improved_at FROM finishes
+JOIN tm_players ON tm_players.id = finishes.player_id
+WHERE finishes.map_uid = ?
+ORDER BY finishes.score ASC, finishes.last_improved_at ASC;

@@ -106,9 +106,9 @@ type TmPlayer struct {
 	ID            int64          `json:"id"`
 	Login         string         `json:"login"`
 	GameType      string         `json:"gameType"`
-	Zone          *string `json:"zone"`
+	Zone          *string 		 `json:"zone"`
 	TotalPlaytime int32          `json:"totalPlaytime"`
-	Nickname      *string `json:"nickname"`
+	Nickname      *string 		 `json:"nickname"`
 	Role          string         `json:"role"`
 	IsMuted       int8           `json:"isMuted"`
 	IsBlacklisted int8           `json:"isBlacklisted"`
