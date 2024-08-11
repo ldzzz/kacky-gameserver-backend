@@ -139,15 +139,15 @@ CREATE TABLE `event_player_edition_stats` (
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE `servers` (
+CREATE TABLE `servers` (                              //TODO: this needs more columns like mapstarttime, or timeleft
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `login` VARCHAR(255) NOT NULL,
+  `login` VARCHAR(255) NOT NULL UNIQUE,
   `name` VARCHAR(255) NOT NULL,
   `game_type` VARCHAR(255) NOT NULL,
   `difficulty` INT DEFAULT 0,
-  `timelimit` INT NOT NULL DEFAULT 10,
+  `time_limit` INT NOT NULL DEFAULT 10,
+  `current_map_info` JSON NULL,
   `next_maps` JSON,
-  `online` TINYINT NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

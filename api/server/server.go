@@ -41,7 +41,6 @@ func serverLeaderboard(req micro.Request) {
 		_ = req.RespondJSON(err)
 		return
 	}
-
 }
 
 func serverMapRecords(req micro.Request) {
@@ -76,13 +75,14 @@ func serverSetDifficulty(req micro.Request) {
 }
 
 func serverSync(req micro.Request) {
-	var sd ServerLeaderboard
+	var sd ServerSync
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
+
 }
 
 func serverMapSync(req micro.Request) {
