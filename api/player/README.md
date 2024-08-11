@@ -55,14 +55,14 @@ The route is called by gameserver controller whenever a player connects to one o
    "role": "string",
    "isMuted": bool,
    "isBlacklisted": bool,
-   "createdAt": "ISO8601 datetime string",
-   "updatedAt": "ISO8601 datetime string",
-   "streamData": {                          # or null if it doesn't exist
+   "createdAt": "datetime string iso8601 (UTC)",
+   "updatedAt": "datetime string iso8601 (UTC)",
+   "streamData": {                          # or null if not a streamer (this can be inferred by role)
       "platform": "string",
       "streamerLogin": "string",
       "streamStatus": bool
    },
-   "records": []    # or null if it doesn't exist
+   "records": []    # or null if player has no finishes
 }
 
 -------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ Error Response
 }
 ```
 
-### <u>**Examples**</u>
+#### <u>**Examples**</u>
 
 <details>
   <summary>Request: TMNF player</summary>
@@ -174,7 +174,24 @@ Error Response
       "streamerLogin":"tekky",
       "streamStatus":false
    },
-   "records":[]
+   "records":[
+      {
+         "mapUid":"I7rI7jAga6C4tGAe5OTDoyLF2fh",
+         "number":5,
+         "score":12345,
+         "finishCounter":1,
+         "createdAt":"2024-08-10T20:29:51Z",
+         "lastImprovedAt":"2024-08-10T20:29:51Z"
+      },
+      {
+         "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+         "number":14,
+         "score":12343,
+         "finishCounter":6,
+         "createdAt":"2024-08-10T21:03:31Z",
+         "lastImprovedAt":"2024-08-10T21:03:43Z"
+      }
+   ]
 }
 ```
 
@@ -222,8 +239,8 @@ The route is called by gameserver controller whenever a player wants to update t
    "role": "string",
    "isMuted": bool,
    "isBlacklisted": bool,
-   "createdAt": "ISO8601 datetime string",
-   "updatedAt": "ISO8601 datetime string",
+   "createdAt": "datetime string iso8601 (UTC)",
+   "updatedAt": "datetime string iso8601 (UTC)",
    "streamData": {                          # or null if it doesn't exist
       "platform": "string",
       "streamerLogin": "string",
@@ -240,7 +257,7 @@ Error Response
 }
 ```
 
-### <u>**Examples**</u>
+#### <u>**Examples**</u>
 
 <details>
   <summary>Request: TMNF player</summary>
@@ -318,7 +335,7 @@ The gameserver controller shall report status accordingly upon response receptio
    "login":"string",
    "gameType":"string",
    "mapUid":"string",
-   "timestamp":"string iso8601 (UTC)",
+   "timestamp":"datetime string iso8601 (UTC)",
    "score":number
 }
 ```
@@ -327,26 +344,26 @@ The gameserver controller shall report status accordingly upon response receptio
 
 ```json
 {
-   "id":30,
-   "login":"p8",
-   "gameType":"KK",
-   "zone":"World|Europe|Croatia",
-   "totalPlaytime":0,
-   "nickname":"el-djinn",
-   "role":"user",
-   "isMuted":0,
-   "isBlacklisted":0,
-   "createdAt":"2024-08-10T10:42:59Z",
-   "updatedAt":"2024-08-10T10:42:59Z",
+   "id":number,
+   "login":"string",
+   "gameType":"string",
+   "zone":"string",
+   "totalPlaytime":number,
+   "nickname":"string",
+   "role":"string",
+   "isMuted":number,
+   "isBlacklisted":number,
+   "createdAt":"datetime string iso8601 (UTC)",
+   "updatedAt":"datetime string iso8601 (UTC)",
    "streamData":null,
    "records":[
       {
          "mapUId":"string",
          "number":number,
-         "score":12344,
-         "finishCounter":2,
-         "createdAt":"2024-08-10T15:00:34Z",
-         "lastImprovedAt":"2024-08-10T15:00:40Z"
+         "score":number,
+         "finishCounter":number,
+         "createdAt":"datetime string iso8601 (UTC)",
+         "lastImprovedAt":"datetime string iso8601 (UTC)"
       }
    ]
 }
@@ -361,7 +378,7 @@ Error Response
 
 ```
 
-### <u>**Example responses**</u>
+#### <u>**Example responses**</u>
 
 <details>
   <summary>Request: TMNF player</summary>
@@ -480,8 +497,8 @@ The route is called by gameserver controller whenever a player wants to update t
    "role": "string",
    "isMuted": bool,
    "isBlacklisted": bool,
-   "createdAt": "ISO8601 datetime string",
-   "updatedAt": "ISO8601 datetime string",
+   "createdAt": "datetime string iso8601 (UTC)",
+   "updatedAt": "datetime string iso8601 (UTC)",
    "streamData": {                          # or null if it doesn't exist
       "platform": "string",
       "streamerLogin": "string",
@@ -498,7 +515,7 @@ Error Response
 }
 ```
 
-### <u>**Example responses**</u>
+#### <u>**Example responses**</u>
 
 <details>
   <summary>Request: TMNF player</summary>
@@ -600,8 +617,8 @@ Whether they are going live (true) or going offline (false), the backend stores 
    "role": "string",
    "isMuted": bool,
    "isBlacklisted": bool,
-   "createdAt": "ISO8601 datetime string",
-   "updatedAt": "ISO8601 datetime string",
+   "createdAt": "datetime string iso8601 (UTC)",
+   "updatedAt": "datetime string iso8601 (UTC)",
    "streamData": {                          # or null if it doesn't exist
       "platform": "string",
       "streamerLogin": "string",
@@ -618,7 +635,7 @@ Error Response
 }
 ```
 
-### <u>**Example responses**</u>
+#### <u>**Example responses**</u>
 
 <details>
   <summary>Request: TMNF player</summary>

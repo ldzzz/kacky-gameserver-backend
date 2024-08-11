@@ -18,10 +18,11 @@ func InitServices() {
 		Version: "1.0.0",
 	})
 	playersGroup := srv.AddGroup("server")
-	// endpoint will be registered under "numbers.add" subject
-	_ = playersGroup.AddEndpoint("difficulty", micro.HandlerFunc(serverSetDifficulty))
+	_ = playersGroup.AddEndpoint("mapStart", micro.HandlerFunc(serverMapStart))
+	_ = playersGroup.AddEndpoint("mapEnd", micro.HandlerFunc(serverMapEnd))
+	_ = playersGroup.AddEndpoint("setDifficulty", micro.HandlerFunc(serverSetDifficulty))
 	_ = playersGroup.AddEndpoint("sync", micro.HandlerFunc(serverSync))
-	_ = playersGroup.AddEndpoint("mapsync", micro.HandlerFunc(serverMapSync))
+	_ = playersGroup.AddEndpoint("mapSync", micro.HandlerFunc(serverMapSync))
 	_ = playersGroup.AddEndpoint("leaderboard", micro.HandlerFunc(serverLeaderboard))
 
 	slog.Info(fmt.Sprintf("Initialized %s", srv.Info()))
@@ -40,5 +41,13 @@ func serverMapSync(req micro.Request) {
 }
 
 func serverLeaderboard(req micro.Request) {
+	req.Respond(req.Data())
+}
+
+func serverMapStart(req micro.Request) {
+	req.Respond(req.Data())
+}
+
+func serverMapEnd(req micro.Request) {
 	req.Respond(req.Data())
 }
