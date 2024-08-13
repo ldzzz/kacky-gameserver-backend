@@ -9,7 +9,7 @@ Check out API documentation [here](/api/README.md).
 
 ## Development
 
-The project is set-up to work with VSCode devcontainers. You can read more about it [here](https://code.visualstudio.com/docs/devcontainers/containers).<br>
+The project is set-up to work with VSCode devcontainers. You can read more about it [here](https://code.visualstudio.com/docs/devcontainers/containers).<br> The development database is not persistent and will be lost when container volume is removed. <br> If you want to keep development database you need to mount named volume for the service container in `.devctonainer/docker-compose-dev.yml`.
 
 Following services are started via devcontainers:
 

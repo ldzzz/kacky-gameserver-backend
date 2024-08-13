@@ -40,13 +40,7 @@ services:
     restart: unless-stopped
     env_file: ".env.dev"
     healthcheck:
-      test:
-        [
-          "CMD",
-          "healthcheck.sh",
-          "--connect",
-          "--innodb_initialized"
-        ]
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       start_period: 10s
       interval: 10s
       timeout: 5s
