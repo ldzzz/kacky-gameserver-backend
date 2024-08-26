@@ -92,51 +92,53 @@ type PlayerEditionStat struct {
 }
 
 type Server struct {
-	ID         int64         `json:"id"`
-	Name       string        `json:"name"`
-	GameType   string        `json:"gameType"`
-	Difficulty *int32 `json:"difficulty"`
-	Timelimit  int32         `json:"timelimit"`
-	Online     int8          `json:"online"`
-	CreatedAt  time.Time     `json:"createdAt"`
-	UpdatedAt  time.Time     `json:"updatedAt"`
+	ID          int64            `json:"id"`
+	Login       string           `json:"login"`
+	Name        string           `json:"name"`
+	GameType    string           `json:"gameType"`
+	Difficulty  *int32           `json:"difficulty"`
+	TimeLimit   int32            `json:"timeLimit"`
+	CurrentInfo *json.RawMessage `json:"currentInfo"`
+	MapList     *json.RawMessage `json:"mapList"`
+	CreatedAt   time.Time        `json:"createdAt"`
+	UpdatedAt   time.Time        `json:"updatedAt"`
 }
 
 type TmPlayer struct {
-	ID            int64          `json:"id"`
-	Login         string         `json:"login"`
-	GameType      string         `json:"gameType"`
-	Zone          *string 		 `json:"zone"`
-	TotalPlaytime int32          `json:"totalPlaytime"`
-	Nickname      *string 		 `json:"nickname"`
-	Role          string         `json:"role"`
-	IsMuted       int8           `json:"isMuted"`
-	IsBlacklisted int8           `json:"isBlacklisted"`
-	CreatedAt     time.Time      `json:"createdAt"`
-	UpdatedAt     time.Time      `json:"updatedAt"`
+	ID            int64     `json:"id"`
+	Login         string    `json:"login"`
+	GameType      string    `json:"gameType"`
+	Zone          *string   `json:"zone"`
+	TotalPlaytime int32     `json:"totalPlaytime"`
+	Nickname      *string   `json:"nickname"`
+	Role          string    `json:"role"`
+	IsMuted       int8      `json:"isMuted"`
+	IsBlacklisted int8      `json:"isBlacklisted"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 type UserMetadatum struct {
-	ID           int64           `json:"id"`
-	WebUserID    *int64   `json:"webUserId"`
-	TmnfPlayerID *int64   `json:"tmnfPlayerId"`
-	Tm20PlayerID *int64   `json:"tm20PlayerId"`
+	ID           int64            `json:"id"`
+	WebUserID    *int64           `json:"webUserId"`
+	TmnfPlayerID *int64           `json:"tmnfPlayerId"`
+	Tm20PlayerID *int64           `json:"tm20PlayerId"`
 	StreamData   *json.RawMessage `json:"streamData"`
 	Tags         *json.RawMessage `json:"tags"`
 	Difficulties *json.RawMessage `json:"difficulties"`
 	Alarms       *json.RawMessage `json:"alarms"`
-	CreatedAt    time.Time       `json:"createdAt"`
-	UpdatedAt    time.Time       `json:"updatedAt"`
+	CreatedAt    time.Time        `json:"createdAt"`
+	UpdatedAt    time.Time        `json:"updatedAt"`
 }
 
 type WebUser struct {
-	ID           int64          `json:"id"`
-	DiscordLogin string         `json:"discordLogin"`
-	Tm20PlayerID *int64  `json:"tm20PlayerId"`
-	TmnfPlayerID *int64  `json:"tmnfPlayerId"`
-	Role         *string `json:"role"`
-	CreatedAt    time.Time      `json:"createdAt"`
-	UpdatedAt    time.Time      `json:"updatedAt"`
+	ID           int64     `json:"id"`
+	DiscordLogin string    `json:"discordLogin"`
+	Tm20PlayerID *int64    `json:"tm20PlayerId"`
+	TmnfPlayerID *int64    `json:"tmnfPlayerId"`
+	Role         *string   `json:"role"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 type WorldRecord struct {

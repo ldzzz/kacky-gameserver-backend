@@ -157,11 +157,11 @@ ORDER BY finishes.score ASC, finishes.last_improved_at ASC
 `
 
 type GetMapSortedRecordsRow struct {
-	Login          string         `json:"login"`
-	Nickname       *string 		  `json:"nickname"`
-	Score          int32          `json:"score"`
-	FinishCounter  int32          `json:"finishCounter"`
-	LastImprovedAt time.Time      `json:"lastImprovedAt"`
+	Login          string    `json:"login"`
+	Nickname       *string   `json:"nickname"`
+	Score          int32     `json:"score"`
+	FinishCounter  int32     `json:"finishCounter"`
+	LastImprovedAt time.Time `json:"lastImprovedAt"`
 }
 
 func (q *Queries) GetMapSortedRecords(ctx context.Context, mapUid string) ([]GetMapSortedRecordsRow, error) {
