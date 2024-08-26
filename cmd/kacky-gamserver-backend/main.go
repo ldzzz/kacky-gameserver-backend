@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/ldzzz/kacky-gameserver-backend/api/admin"
 	"github.com/ldzzz/kacky-gameserver-backend/api/player"
 	"github.com/ldzzz/kacky-gameserver-backend/api/server"
 	"github.com/ldzzz/kacky-gameserver-backend/config"
@@ -97,8 +98,9 @@ func Run(cfg *config.Config) error {
 
 	// init endpoints
 	slog.Info("Initializing endpoints..")
-	player.InitServices()
 	server.InitServices()
+	admin.InitServices()
+	player.InitServices()
 
 	//rep, _ := nc.Request("player.connect", []byte("{\"login\":\"mylogin\",\"nickname\":\"mylogin\",\"zone\":\"A|B|C\", \"gameType\": \"KK\"}"), time.Second)
 	//fmt.Println(string(rep.Data))

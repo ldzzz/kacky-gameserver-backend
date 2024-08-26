@@ -8,6 +8,7 @@ import (
 
 	"github.com/ldzzz/kacky-gameserver-backend/config"
 	"github.com/ldzzz/kacky-gameserver-backend/database"
+	"github.com/ldzzz/kacky-gameserver-backend/internal/apihelpers"
 	"github.com/ldzzz/kacky-gameserver-backend/internal/utils"
 	"github.com/nats-io/nats.go/micro"
 )
@@ -34,7 +35,7 @@ func InitServices() {
 }
 
 func serverLeaderboard(req micro.Request) {
-	var sd ServerLeaderboard
+	var sd apihelpers.ServerLeaderboard
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
@@ -44,7 +45,7 @@ func serverLeaderboard(req micro.Request) {
 }
 
 func serverMapRecords(req micro.Request) {
-	var sd ServerMapRecords
+	var sd apihelpers.ServerMapRecords
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
@@ -65,7 +66,7 @@ func serverMapRecords(req micro.Request) {
 }
 
 func serverSetDifficulty(req micro.Request) {
-	var sd ServerLeaderboard
+	var sd apihelpers.ServerLeaderboard
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
@@ -75,7 +76,7 @@ func serverSetDifficulty(req micro.Request) {
 }
 
 func serverSync(req micro.Request) {
-	var sd ServerSync
+	var sd apihelpers.ServerSync
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
@@ -86,7 +87,7 @@ func serverSync(req micro.Request) {
 }
 
 func serverMapSync(req micro.Request) {
-	var sd ServerLeaderboard
+	var sd apihelpers.ServerLeaderboard
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
@@ -96,7 +97,7 @@ func serverMapSync(req micro.Request) {
 }
 
 func serverMapStart(req micro.Request) {
-	var sd ServerLeaderboard
+	var sd apihelpers.ServerLeaderboard
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
@@ -106,7 +107,7 @@ func serverMapStart(req micro.Request) {
 }
 
 func serverMapEnd(req micro.Request) {
-	var sd ServerLeaderboard
+	var sd apihelpers.ServerLeaderboard
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
