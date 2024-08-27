@@ -116,6 +116,8 @@ type TmPlayer struct {
 	Role          string    `json:"role"`
 	IsMuted       int8      `json:"isMuted"`
 	IsBlacklisted int8      `json:"isBlacklisted"`
+	MuteReason    string    `json:"muteReason"`
+	BanReason     string    `json:"banReason"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
 }

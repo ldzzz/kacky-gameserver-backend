@@ -41,6 +41,7 @@ func serverMapRecords(req micro.Request) {
 		return
 	}
 
+	// get map records by uid (sorted)
 	var mapRecords []*database.GetMapSortedRecordsRow
 	if mapRecords, err = config.ENV.DB.GetMapSortedRecords(context.Background(), sd.MapUid); err != nil && err != sql.ErrNoRows {
 		slog.Error("Couldn't retrieve map records", "error", err)
@@ -48,6 +49,7 @@ func serverMapRecords(req micro.Request) {
 		return
 	}
 
+	// return map records
 	slog.Info(fmt.Sprintf("Returning map records for: %s", sd.MapUid))
 	slog.Debug(utils.PrettyPrint(mapRecords))
 	_ = req.RespondJSON(mapRecords)
@@ -62,6 +64,7 @@ func serverSync(req micro.Request) {
 		return
 	}
 
+	// marshal to json string
 	var currentMapInfoData json.RawMessage
 	if currentMapInfoData, err = json.Marshal(sd.CurrentMapInfo); err != nil {
 		slog.Error("Unable to marshal currentMapInfoData data", "error", err)
@@ -69,14 +72,27 @@ func serverSync(req micro.Request) {
 		return
 	}
 
-	var nextMapsData json.RawMessage
-	if nextMapsData, err = json.Marshal(sd.NextMaps); err != nil {
+	// add more info for next maps to store to db for easier access
+	var nextMapsData []apihelpers.ServerNextMapInfo
+	for _, mapUid := range sd.NextMaps {
+		var currMap *db.Map
+		if currMap, err = config.ENV.DB.GetMapByUid(context.Background(), mapUid); err != nil {
+			_ = req.RespondJSON(&utils.RequestError{Code: 400, Message: "MapUID doesnt exist"})
+			return
+		}
+		nextMapsData = append(nextMapsData, apihelpers.ServerNextMapInfo{MapUid: currMap.MapUid, MapName: currMap.FullName, MapNumber: currMap.Number, MapAuthor: currMap.Author, MapAuthorTime: currMap.AuthorTime})
+	}
+
+	// marshal to json string
+	var nextMapsDataSerialized json.RawMessage
+	if nextMapsDataSerialized, err = json.Marshal(nextMapsData); err != nil {
 		slog.Error("Unable to marshal nextMapsData data", "error", err)
 		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
 		return
 	}
 
-	if err = config.ENV.DB.CreateUpdateServer(context.Background(), database.CreateUpdateServerParams{Login: sd.ServerLogin, Name: sd.ServerName, GameType: sd.GameType, TimeLimit: sd.TimeLimit, CurrentMapInfo: currentMapInfoData, NextMaps: nextMapsData}); err != nil {
+	// store to db
+	if err = config.ENV.DB.CreateUpdateServer(context.Background(), database.CreateUpdateServerParams{Login: sd.ServerLogin, Name: sd.ServerName, GameType: sd.GameType, TimeLimit: sd.TimeLimit, CurrentMapInfo: currentMapInfoData, NextMaps: nextMapsDataSerialized}); err != nil {
 		slog.Error("Couldn't add/update server", "error", err)
 		_ = req.RespondJSON(err)
 		return
@@ -90,6 +106,7 @@ func serverSync(req micro.Request) {
 		return
 	}
 
+	// return serverlist
 	slog.Debug(fmt.Sprintf("Request: %s\nResponse: %s", utils.PrettyPrint(sd), utils.PrettyPrint(serverList)))
 	_ = req.RespondJSON(serverList)
 }

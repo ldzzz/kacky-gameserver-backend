@@ -45,7 +45,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
+    ports:
+      - "3306:3306"
 networks:
   default:
     name: kacky-development-network

@@ -155,6 +155,8 @@ The game controller can calculate remaining time using information from the `sta
    "timeLimit":number, # minutes
    "currentMapInfo":{
       "mapUid":"string",
+      "mapName":"string",
+      "mapNumber":number,
       "mapAuthor":"string", #author name
       "mapAuthorTime":number, #milis
       "startStamp":"datetime string iso8601 (UTC)"
@@ -180,16 +182,21 @@ The game controller can calculate remaining time using information from the `sta
       "timeLimit":number,
       "currentMapInfo":{
          "mapUid":"string",
+         "mapName":"string",
+         "mapNumber":number,
          "mapAuthor":"string",
          "mapAuthorTime":number,
          "startStamp":"datetime string iso8601 (UTC)"
       },
       "nextMaps":[
-         "string",
-         "string",
-         "string",
-         "string",
-         "string"
+          {
+                "mapUid": "string",
+                "mapName": "string",
+                "mapNumber": number,
+                "mapAuthor": "string",
+                "mapAuthorTime": number
+            },
+            ...
       ]
    },
    ...
@@ -219,6 +226,8 @@ Error Response
    "timeLimit":15,
    "currentMapInfo":{
       "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+      "mapName":"Kackiest Kacky #123",
+      "mapNumber":123,
       "mapAuthor":"djinn",
       "mapAuthorTime":12345,
       "startStamp":"2024-08-27T16:03:40.692654Z"
@@ -252,11 +261,41 @@ Error Response
          "startStamp":"2024-08-27T16:03:22.064576Z"
       },
       "nextMaps":[
-         "BeySZdnfuSh4nHY5xztiXLmlrXe",
-         "jH8X3qPtpn6pj3dLAaq08pyDdp1",
-         "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
-         "SEHmwPJVBl3NpHS56w6Sirac2Ic",
-         "K27AW3HYV47qqqXentunIoUERu8"
+         {
+                "mapUid": "BeySZdnfuSh4nHY5xztiXLmlrXe",
+                "mapName": "A01-Race",
+                "mapNumber": 1,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "jH8X3qPtpn6pj3dLAaq08pyDdp1",
+                "mapName": "A10-Acrobatic",
+                "mapNumber": 10,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
+                "mapName": "A11-Race",
+                "mapNumber": 11,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "SEHmwPJVBl3NpHS56w6Sirac2Ic",
+                "mapName": "A04-Acrobatic",
+                "mapNumber": 4,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "K27AW3HYV47qqqXentunIoUERu8",
+                "mapName": "A13-Race",
+                "mapNumber": 13,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            }
       ]
    },
    {
@@ -271,11 +310,41 @@ Error Response
          "startStamp":"2024-08-27T16:03:40.692654Z"
       },
       "nextMaps":[
-         "BeySZdnfuSh4nHY5xztiXLmlrXe",
-         "jH8X3qPtpn6pj3dLAaq08pyDdp1",
-         "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
-         "SEHmwPJVBl3NpHS56w6Sirac2Ic",
-         "K27AW3HYV47qqqXentunIoUERu8"
+         {
+                "mapUid": "BeySZdnfuSh4nHY5xztiXLmlrXe",
+                "mapName": "A01-Race",
+                "mapNumber": 1,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "jH8X3qPtpn6pj3dLAaq08pyDdp1",
+                "mapName": "A10-Acrobatic",
+                "mapNumber": 10,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
+                "mapName": "A11-Race",
+                "mapNumber": 11,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "SEHmwPJVBl3NpHS56w6Sirac2Ic",
+                "mapName": "A04-Acrobatic",
+                "mapNumber": 4,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            },
+            {
+                "mapUid": "K27AW3HYV47qqqXentunIoUERu8",
+                "mapName": "A13-Race",
+                "mapNumber": 13,
+                "mapAuthor": "Nadeo",
+                "mapAuthorTime": 54321
+            }
       ]
    }
 ]

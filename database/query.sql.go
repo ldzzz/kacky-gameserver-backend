@@ -132,12 +132,12 @@ func (q *Queries) CreateUpdateStreamDataTMNF(ctx context.Context, arg CreateUpda
 	return err
 }
 
-const fetchMapByUid = `-- name: FetchMapByUid :one
+const getMapByUid = `-- name: GetMapByUid :one
 SELECT id, map_uid, event_id, full_name, number, author, author_time, total_playtime, created_at, updated_at FROM maps WHERE map_uid = ?
 `
 
-func (q *Queries) FetchMapByUid(ctx context.Context, mapUid string) (*Map, error) {
-	row := q.queryRow(ctx, q.fetchMapByUidStmt, fetchMapByUid, mapUid)
+func (q *Queries) GetMapByUid(ctx context.Context, mapUid string) (*Map, error) {
+	row := q.queryRow(ctx, q.getMapByUidStmt, getMapByUid, mapUid)
 	var i Map
 	err := row.Scan(
 		&i.ID,
@@ -150,31 +150,6 @@ func (q *Queries) FetchMapByUid(ctx context.Context, mapUid string) (*Map, error
 		&i.TotalPlaytime,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-	)
-	return &i, err
-}
-
-const fetchPlayerMapFinish = `-- name: FetchPlayerMapFinish :one
-SELECT id, map_uid, player_id, score, finish_counter, created_at, updated_at, last_improved_at FROM finishes WHERE map_uid = ? AND player_id = ?
-`
-
-type FetchPlayerMapFinishParams struct {
-	MapUid   string `json:"mapUid"`
-	PlayerID int64  `json:"playerId"`
-}
-
-func (q *Queries) FetchPlayerMapFinish(ctx context.Context, arg FetchPlayerMapFinishParams) (*Finish, error) {
-	row := q.queryRow(ctx, q.fetchPlayerMapFinishStmt, fetchPlayerMapFinish, arg.MapUid, arg.PlayerID)
-	var i Finish
-	err := row.Scan(
-		&i.ID,
-		&i.MapUid,
-		&i.PlayerID,
-		&i.Score,
-		&i.FinishCounter,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.LastImprovedAt,
 	)
 	return &i, err
 }
@@ -224,7 +199,7 @@ func (q *Queries) GetMapSortedRecords(ctx context.Context, mapUid string) ([]*Ge
 }
 
 const getPlayer = `-- name: GetPlayer :one
-SELECT id, login, game_type, zone, total_playtime, nickname, role, is_muted, is_blacklisted, created_at, updated_at FROM tm_players
+SELECT id, login, game_type, zone, total_playtime, nickname, role, is_muted, is_blacklisted, mute_reason, ban_reason, created_at, updated_at FROM tm_players
 WHERE login = ? AND game_type = ?
 `
 
@@ -246,6 +221,8 @@ func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (*TmPlayer
 		&i.Role,
 		&i.IsMuted,
 		&i.IsBlacklisted,
+		&i.MuteReason,
+		&i.BanReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -301,6 +278,31 @@ func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesPa
 		return nil, err
 	}
 	return items, nil
+}
+
+const getPlayerMapFinish = `-- name: GetPlayerMapFinish :one
+SELECT id, map_uid, player_id, score, finish_counter, created_at, updated_at, last_improved_at FROM finishes WHERE map_uid = ? AND player_id = ?
+`
+
+type GetPlayerMapFinishParams struct {
+	MapUid   string `json:"mapUid"`
+	PlayerID int64  `json:"playerId"`
+}
+
+func (q *Queries) GetPlayerMapFinish(ctx context.Context, arg GetPlayerMapFinishParams) (*Finish, error) {
+	row := q.queryRow(ctx, q.getPlayerMapFinishStmt, getPlayerMapFinish, arg.MapUid, arg.PlayerID)
+	var i Finish
+	err := row.Scan(
+		&i.ID,
+		&i.MapUid,
+		&i.PlayerID,
+		&i.Score,
+		&i.FinishCounter,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LastImprovedAt,
+	)
+	return &i, err
 }
 
 const getPlayerMetadata = `-- name: GetPlayerMetadata :one

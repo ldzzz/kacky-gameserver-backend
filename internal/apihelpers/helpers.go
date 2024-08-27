@@ -104,6 +104,12 @@ func GetPlayerCombined(login string, gameType string, includeMetadata bool, incl
 
 func ProcessPlayerFinish(pd PlayerFinish) (*PlayerFinishInfo, error) {
 	var err error
+
+	// check if map exists
+	if _, err = config.ENV.DB.GetMapByUid(context.Background(), pd.MapUid); err != nil {
+		return nil, &utils.RequestError{Code: 400, Message: "MapUID doesnt exist"}
+	}
+
 	// get the player data
 	var fetchedPlayer *db.TmPlayer
 	if fetchedPlayer, err = GetPlayer(pd.Login, pd.GameType); err != nil {

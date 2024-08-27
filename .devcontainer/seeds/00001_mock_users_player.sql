@@ -5,8 +5,10 @@
 # tm_players mock
 */
 /*real players*/
-INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (1, "el-djinn", "KK", "World|Europe|Bosnia and Herzegovina", "el-djinn", "admin");
-INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (2, "3zrJPQyLTZKF2Mrkr-qUEw", "KR", "World|Europe|Bosnia and Herzegovina", "el-djinn", "admin");
+INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (1, "3zrJPQyLTZKF2Mrkr-qUEw", "KR", "World|Europe|Bosnia and Herzegovina", "el-djinn", "admin");
+INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (2, "el-djinn", "KK", "World|Europe|Bosnia and Herzegovina", "el-djinn", "admin");
+INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (3, "EdbzfLXMS_aI_PjZCVaygQ", "KR", "World|Europe|Finland", "reaby", "admin");
+INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (4, "reaby", "KK", "World|Europe|Finland", "reaby", "admin");
 /*fake players*/
 INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (10, "*fakeplayer1*", "KK", "World|Europe|Testland", "player1");
 INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (11, "*fakeplayer2*", "KK", "World|Europe|Testland", "player2");
@@ -25,8 +27,7 @@ INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (19, "*fake
 INSERT INTO web_users (id, discord_login, tm20_player_id, tmnf_player_id, role) VALUES (1, "djinner", 1, 2, "admin");
 INSERT INTO web_users (id, discord_login, tm20_player_id, tmnf_player_id, role) VALUES (2, ".garlik", null, null, "admin");
 INSERT INTO web_users (id, discord_login, tm20_player_id, tmnf_player_id, role) VALUES (3, "valascus", null, null, "admin");
-INSERT INTO web_users (id, discord_login, tm20_player_id, tmnf_player_id, role) VALUES (4, "reaby", null, null, "admin");
-
+INSERT INTO web_users (id, discord_login, tm20_player_id, tmnf_player_id, role) VALUES (4, "reaby", 3, 4, "admin");
 
 -- +goose StatementEnd
 

@@ -60,11 +60,20 @@ type ServerMapRecords struct {
 }
 
 type ServerCurrentMapInfo struct {
-	MapUid string `json:"mapUid" validate:"required"`
-	//	MapName       string `json:"mapName" validate:"required"`
+	MapUid        string `json:"mapUid" validate:"required"`
+	MapName       string `json:"mapName" validate:"required"`
+	MapNumber     int32  `json:"mapNumber" validate:"required"`
 	MapAuthor     string `json:"mapAuthor" validate:"required"`
-	MapAuthorTime int    `json:"mapAuthorTime" validate:"required"`
+	MapAuthorTime int32  `json:"mapAuthorTime" validate:"required"`
 	StartStamp    string `json:"startStamp" validate:"required"`
+}
+
+type ServerNextMapInfo struct {
+	MapUid        string `json:"mapUid" validate:"required"`
+	MapName       string `json:"mapName" validate:"required"`
+	MapNumber     int32  `json:"mapNumber" validate:"required"`
+	MapAuthor     string `json:"mapAuthor" validate:"required"`
+	MapAuthorTime int32  `json:"mapAuthorTime" validate:"required"`
 }
 
 type ServerSync struct {

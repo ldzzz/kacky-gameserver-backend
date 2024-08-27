@@ -40,10 +40,10 @@ ON DUPLICATE KEY UPDATE stream_data=VALUES(stream_data);
 -- name: SetPlayerRole :exec
 UPDATE tm_players SET role = ? WHERE login = ? AND game_type = ?;
 
--- name: FetchMapByUid :one
+-- name: GetMapByUid :one
 SELECT * FROM maps WHERE map_uid = ?;
 
--- name: FetchPlayerMapFinish :one
+-- name: GetPlayerMapFinish :one
 SELECT * FROM finishes WHERE map_uid = ? AND player_id = ?;
 
 -- name: CreateUpdatePlayerMapFinish :exec

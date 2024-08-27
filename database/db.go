@@ -39,11 +39,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createUpdateStreamDataTMNFStmt, err = db.PrepareContext(ctx, createUpdateStreamDataTMNF); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUpdateStreamDataTMNF: %w", err)
 	}
-	if q.fetchMapByUidStmt, err = db.PrepareContext(ctx, fetchMapByUid); err != nil {
-		return nil, fmt.Errorf("error preparing query FetchMapByUid: %w", err)
-	}
-	if q.fetchPlayerMapFinishStmt, err = db.PrepareContext(ctx, fetchPlayerMapFinish); err != nil {
-		return nil, fmt.Errorf("error preparing query FetchPlayerMapFinish: %w", err)
+	if q.getMapByUidStmt, err = db.PrepareContext(ctx, getMapByUid); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMapByUid: %w", err)
 	}
 	if q.getMapSortedRecordsStmt, err = db.PrepareContext(ctx, getMapSortedRecords); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMapSortedRecords: %w", err)
@@ -53,6 +50,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getPlayerFinishesStmt, err = db.PrepareContext(ctx, getPlayerFinishes); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayerFinishes: %w", err)
+	}
+	if q.getPlayerMapFinishStmt, err = db.PrepareContext(ctx, getPlayerMapFinish); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPlayerMapFinish: %w", err)
 	}
 	if q.getPlayerMetadataStmt, err = db.PrepareContext(ctx, getPlayerMetadata); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayerMetadata: %w", err)
@@ -93,14 +93,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createUpdateStreamDataTMNFStmt: %w", cerr)
 		}
 	}
-	if q.fetchMapByUidStmt != nil {
-		if cerr := q.fetchMapByUidStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing fetchMapByUidStmt: %w", cerr)
-		}
-	}
-	if q.fetchPlayerMapFinishStmt != nil {
-		if cerr := q.fetchPlayerMapFinishStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing fetchPlayerMapFinishStmt: %w", cerr)
+	if q.getMapByUidStmt != nil {
+		if cerr := q.getMapByUidStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMapByUidStmt: %w", cerr)
 		}
 	}
 	if q.getMapSortedRecordsStmt != nil {
@@ -116,6 +111,11 @@ func (q *Queries) Close() error {
 	if q.getPlayerFinishesStmt != nil {
 		if cerr := q.getPlayerFinishesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPlayerFinishesStmt: %w", cerr)
+		}
+	}
+	if q.getPlayerMapFinishStmt != nil {
+		if cerr := q.getPlayerMapFinishStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPlayerMapFinishStmt: %w", cerr)
 		}
 	}
 	if q.getPlayerMetadataStmt != nil {
@@ -177,11 +177,11 @@ type Queries struct {
 	createUpdateServerStmt          *sql.Stmt
 	createUpdateStreamDataTM20Stmt  *sql.Stmt
 	createUpdateStreamDataTMNFStmt  *sql.Stmt
-	fetchMapByUidStmt               *sql.Stmt
-	fetchPlayerMapFinishStmt        *sql.Stmt
+	getMapByUidStmt                 *sql.Stmt
 	getMapSortedRecordsStmt         *sql.Stmt
 	getPlayerStmt                   *sql.Stmt
 	getPlayerFinishesStmt           *sql.Stmt
+	getPlayerMapFinishStmt          *sql.Stmt
 	getPlayerMetadataStmt           *sql.Stmt
 	getServersStmt                  *sql.Stmt
 	setPlayerRoleStmt               *sql.Stmt
@@ -196,11 +196,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createUpdateServerStmt:          q.createUpdateServerStmt,
 		createUpdateStreamDataTM20Stmt:  q.createUpdateStreamDataTM20Stmt,
 		createUpdateStreamDataTMNFStmt:  q.createUpdateStreamDataTMNFStmt,
-		fetchMapByUidStmt:               q.fetchMapByUidStmt,
-		fetchPlayerMapFinishStmt:        q.fetchPlayerMapFinishStmt,
+		getMapByUidStmt:                 q.getMapByUidStmt,
 		getMapSortedRecordsStmt:         q.getMapSortedRecordsStmt,
 		getPlayerStmt:                   q.getPlayerStmt,
 		getPlayerFinishesStmt:           q.getPlayerFinishesStmt,
+		getPlayerMapFinishStmt:          q.getPlayerMapFinishStmt,
 		getPlayerMetadataStmt:           q.getPlayerMetadataStmt,
 		getServersStmt:                  q.getServersStmt,
 		setPlayerRoleStmt:               q.setPlayerRoleStmt,
