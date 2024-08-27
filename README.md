@@ -30,6 +30,9 @@ To apply/undo mock seed data following commands are available:
 - `goose -dir ${SEEDS_MIGRATION_DIR} --no-versioning up`
 - `goose -dir ${SEEDS_MIGRATION_DIR} --no-versioning reset`
 
+To ease and speed up the development process, you can use a [script](/scripts/run-dev.sh) that performs all the operations above.<br>
+Examine its usage with `bash ./scripts/run-dev.sh -h`
+
 ## TODOs
 
 - Write more detailed documentation and introduction

@@ -96,10 +96,12 @@ type Server struct {
 	Login       string           `json:"login"`
 	Name        string           `json:"name"`
 	GameType    string           `json:"gameType"`
-	Difficulty  *int32           `json:"difficulty"`
+	Difficulty  int32            `json:"difficulty"`
 	TimeLimit   int32            `json:"timeLimit"`
 	CurrentInfo *json.RawMessage `json:"currentInfo"`
 	MapList     *json.RawMessage `json:"mapList"`
+	NextMaps    *json.RawMessage `json:"nextMaps"`
+	Status      int8             `json:"status"`
 	CreatedAt   time.Time        `json:"createdAt"`
 	UpdatedAt   time.Time        `json:"updatedAt"`
 }

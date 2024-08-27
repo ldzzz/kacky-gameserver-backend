@@ -30,6 +30,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createUpdatePlayerMapFinishStmt, err = db.PrepareContext(ctx, createUpdatePlayerMapFinish); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUpdatePlayerMapFinish: %w", err)
 	}
+	if q.createUpdateServerStmt, err = db.PrepareContext(ctx, createUpdateServer); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUpdateServer: %w", err)
+	}
 	if q.createUpdateStreamDataTM20Stmt, err = db.PrepareContext(ctx, createUpdateStreamDataTM20); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUpdateStreamDataTM20: %w", err)
 	}
@@ -54,6 +57,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getPlayerMetadataStmt, err = db.PrepareContext(ctx, getPlayerMetadata); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayerMetadata: %w", err)
 	}
+	if q.getServersStmt, err = db.PrepareContext(ctx, getServers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetServers: %w", err)
+	}
 	if q.setPlayerRoleStmt, err = db.PrepareContext(ctx, setPlayerRole); err != nil {
 		return nil, fmt.Errorf("error preparing query SetPlayerRole: %w", err)
 	}
@@ -70,6 +76,11 @@ func (q *Queries) Close() error {
 	if q.createUpdatePlayerMapFinishStmt != nil {
 		if cerr := q.createUpdatePlayerMapFinishStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createUpdatePlayerMapFinishStmt: %w", cerr)
+		}
+	}
+	if q.createUpdateServerStmt != nil {
+		if cerr := q.createUpdateServerStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUpdateServerStmt: %w", cerr)
 		}
 	}
 	if q.createUpdateStreamDataTM20Stmt != nil {
@@ -110,6 +121,11 @@ func (q *Queries) Close() error {
 	if q.getPlayerMetadataStmt != nil {
 		if cerr := q.getPlayerMetadataStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPlayerMetadataStmt: %w", cerr)
+		}
+	}
+	if q.getServersStmt != nil {
+		if cerr := q.getServersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getServersStmt: %w", cerr)
 		}
 	}
 	if q.setPlayerRoleStmt != nil {
@@ -158,6 +174,7 @@ type Queries struct {
 	tx                              *sql.Tx
 	createUpdatePlayerStmt          *sql.Stmt
 	createUpdatePlayerMapFinishStmt *sql.Stmt
+	createUpdateServerStmt          *sql.Stmt
 	createUpdateStreamDataTM20Stmt  *sql.Stmt
 	createUpdateStreamDataTMNFStmt  *sql.Stmt
 	fetchMapByUidStmt               *sql.Stmt
@@ -166,6 +183,7 @@ type Queries struct {
 	getPlayerStmt                   *sql.Stmt
 	getPlayerFinishesStmt           *sql.Stmt
 	getPlayerMetadataStmt           *sql.Stmt
+	getServersStmt                  *sql.Stmt
 	setPlayerRoleStmt               *sql.Stmt
 }
 
@@ -175,6 +193,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                              tx,
 		createUpdatePlayerStmt:          q.createUpdatePlayerStmt,
 		createUpdatePlayerMapFinishStmt: q.createUpdatePlayerMapFinishStmt,
+		createUpdateServerStmt:          q.createUpdateServerStmt,
 		createUpdateStreamDataTM20Stmt:  q.createUpdateStreamDataTM20Stmt,
 		createUpdateStreamDataTMNFStmt:  q.createUpdateStreamDataTMNFStmt,
 		fetchMapByUidStmt:               q.fetchMapByUidStmt,
@@ -183,6 +202,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getPlayerStmt:                   q.getPlayerStmt,
 		getPlayerFinishesStmt:           q.getPlayerFinishesStmt,
 		getPlayerMetadataStmt:           q.getPlayerMetadataStmt,
+		getServersStmt:                  q.getServersStmt,
 		setPlayerRoleStmt:               q.setPlayerRoleStmt,
 	}
 }

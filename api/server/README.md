@@ -141,8 +141,159 @@ TBD
 
 ### `server.sync`
 
-TBD
+The route is called by gameserver controller on succesful initialisation and on any desired interval.
+This registers the server in the server list and returns a list of all active servers for the specific `gameType`.
+The game controller can calculate remaining time using information from the `startStamp` and `timeLimit`.
 
+<u>**Request**:</u>
+
+```json
+{
+   "serverLogin":"string",
+   "serverName":"string",
+   "gameType":"string",
+   "timeLimit":number, # minutes
+   "currentMapInfo":{
+      "mapUid":"string",
+      "mapAuthor":"string", #author name
+      "mapAuthorTime":number, #milis
+      "startStamp":"datetime string iso8601 (UTC)"
+   },
+   "nextMaps":[
+      "string",
+      "string",
+      "string",
+      "string",
+      "string"
+   ]
+}
+```
+
+<u>**Response**</u>
+
+```json
+[
+   {
+      "login":"string",
+      "name":"string",
+      "difficulty":number,
+      "timeLimit":number,
+      "currentMapInfo":{
+         "mapUid":"string",
+         "mapAuthor":"string",
+         "mapAuthorTime":number,
+         "startStamp":"datetime string iso8601 (UTC)"
+      },
+      "nextMaps":[
+         "string",
+         "string",
+         "string",
+         "string",
+         "string"
+      ]
+   },
+   ...
+]
+
+
+-------------------------------------------------------------------------------
+
+Error Response
+{
+   "code": number,                  # HTTP error code (404, 400, 500, etc.)
+   "message": "Error message"
+}
+
+```
+
+#### <u>**Example responses**</u>
+
+<details>
+  <summary>Request: Example</summary>
+
+```json
+{
+   "serverLogin":"server2",
+   "serverName":"Red 2",
+   "gameType":"TmForever",
+   "timeLimit":15,
+   "currentMapInfo":{
+      "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+      "mapAuthor":"djinn",
+      "mapAuthorTime":12345,
+      "startStamp":"2024-08-27T16:03:40.692654Z"
+   },
+   "nextMaps":[
+      "BeySZdnfuSh4nHY5xztiXLmlrXe",
+      "jH8X3qPtpn6pj3dLAaq08pyDdp1",
+      "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
+      "SEHmwPJVBl3NpHS56w6Sirac2Ic",
+      "K27AW3HYV47qqqXentunIoUERu8"
+   ]
+}
+```
+
+</details>
+
+<details>
+  <summary>Response: Success</summary>
+
+```json
+[
+   {
+      "login":"server1",
+      "name":"White 1",
+      "difficulty":0,
+      "timeLimit":55,
+      "currentMapInfo":{
+         "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+         "mapAuthor":"djinn",
+         "mapAuthorTime":12345,
+         "startStamp":"2024-08-27T16:03:22.064576Z"
+      },
+      "nextMaps":[
+         "BeySZdnfuSh4nHY5xztiXLmlrXe",
+         "jH8X3qPtpn6pj3dLAaq08pyDdp1",
+         "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
+         "SEHmwPJVBl3NpHS56w6Sirac2Ic",
+         "K27AW3HYV47qqqXentunIoUERu8"
+      ]
+   },
+   {
+      "login":"server2",
+      "name":"Red 2",
+      "difficulty":0,
+      "timeLimit":15,
+      "currentMapInfo":{
+         "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+         "mapAuthor":"djinn",
+         "mapAuthorTime":12345,
+         "startStamp":"2024-08-27T16:03:40.692654Z"
+      },
+      "nextMaps":[
+         "BeySZdnfuSh4nHY5xztiXLmlrXe",
+         "jH8X3qPtpn6pj3dLAaq08pyDdp1",
+         "N0CpLabOm8Kk6Lsf0kwelgHiMQm",
+         "SEHmwPJVBl3NpHS56w6Sirac2Ic",
+         "K27AW3HYV47qqqXentunIoUERu8"
+      ]
+   }
+]
+```
+
+</details>
+
+<details>
+  <summary>Response: Error</summary>
+
+```json
+{
+   "code": 500,
+   "message": "Internal Server Error
+}
+```
+
+</details>
 ---
 
 ### `server.setDifficulty`

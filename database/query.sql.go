@@ -64,6 +64,36 @@ func (q *Queries) CreateUpdatePlayerMapFinish(ctx context.Context, arg CreateUpd
 	return err
 }
 
+const createUpdateServer = `-- name: CreateUpdateServer :exec
+INSERT INTO servers (
+  login, name, game_type, time_limit, current_map_info, next_maps
+) VALUES (
+  ?,?,?,?,?,?
+)
+ON DUPLICATE KEY UPDATE name=VALUES(name), time_limit=VALUES(time_limit), current_map_info=VALUES(current_map_info), next_maps=VALUES(next_maps)
+`
+
+type CreateUpdateServerParams struct {
+	Login          string          `json:"login"`
+	Name           string          `json:"name"`
+	GameType       string          `json:"gameType"`
+	TimeLimit      int32           `json:"timeLimit"`
+	CurrentMapInfo json.RawMessage `json:"currentMapInfo"`
+	NextMaps       json.RawMessage `json:"nextMaps"`
+}
+
+func (q *Queries) CreateUpdateServer(ctx context.Context, arg CreateUpdateServerParams) error {
+	_, err := q.exec(ctx, q.createUpdateServerStmt, createUpdateServer,
+		arg.Login,
+		arg.Name,
+		arg.GameType,
+		arg.TimeLimit,
+		arg.CurrentMapInfo,
+		arg.NextMaps,
+	)
+	return err
+}
+
 const createUpdateStreamDataTM20 = `-- name: CreateUpdateStreamDataTM20 :exec
 INSERT INTO user_metadata (
   tm20_player_id, stream_data
@@ -299,6 +329,50 @@ func (q *Queries) GetPlayerMetadata(ctx context.Context, arg GetPlayerMetadataPa
 		&i.UpdatedAt,
 	)
 	return &i, err
+}
+
+const getServers = `-- name: GetServers :many
+SELECT login, name, difficulty, time_limit, current_map_info, next_maps FROM servers
+WHERE game_type=? AND status=1
+`
+
+type GetServersRow struct {
+	Login          string          `json:"login"`
+	Name           string          `json:"name"`
+	Difficulty     int32           `json:"difficulty"`
+	TimeLimit      int32           `json:"timeLimit"`
+	CurrentMapInfo json.RawMessage `json:"currentMapInfo"`
+	NextMaps       json.RawMessage `json:"nextMaps"`
+}
+
+func (q *Queries) GetServers(ctx context.Context, gameType string) ([]*GetServersRow, error) {
+	rows, err := q.query(ctx, q.getServersStmt, getServers, gameType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetServersRow
+	for rows.Next() {
+		var i GetServersRow
+		if err := rows.Scan(
+			&i.Login,
+			&i.Name,
+			&i.Difficulty,
+			&i.TimeLimit,
+			&i.CurrentMapInfo,
+			&i.NextMaps,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const setPlayerRole = `-- name: SetPlayerRole :exec

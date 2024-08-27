@@ -144,10 +144,12 @@ CREATE TABLE `servers` (
   `login` VARCHAR(255) NOT NULL UNIQUE,
   `name` VARCHAR(255) NOT NULL,
   `game_type` VARCHAR(255) NOT NULL,
-  `difficulty` INT DEFAULT 0,
+  `difficulty` INT NOT NULL DEFAULT 0,
   `time_limit` INT NOT NULL DEFAULT 10,
-  `current_info` JSON NULL,
+  `current_map_info` JSON NULL,
+  `next_maps` JSON NULL,
   `map_list` JSON NULL,
+  `status` TINYINT NOT NULL DEFAULT 1,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -162,6 +164,7 @@ ALTER TABLE `karma_votes` ADD CONSTRAINT `UQ_karma_votes_mapid_playerid` UNIQUE 
 ALTER TABLE `finishes` ADD CONSTRAINT `UQ_finishes_mapid_playerid` UNIQUE (`map_uid`, `player_id`);
 ALTER TABLE `event_finishes` ADD CONSTRAINT `UQ_event_finishes_mapid_playerid` UNIQUE (`map_uid`, `player_id`);
 ALTER TABLE `events` ADD CONSTRAINT `UQ_events_edition_gametype` UNIQUE (`edition`, `game_type`);
+ALTER TABLE `servers` ADD CONSTRAINT `UQ_servers_login_gametype` UNIQUE (`login`, `game_type`);
 ALTER TABLE `player_edition_stats` ADD CONSTRAINT `UQ_player_edition_stats_playerid_eventid` UNIQUE (`player_id`, `event_id`);
 ALTER TABLE `event_player_edition_stats` ADD CONSTRAINT `UQ_event_player_edition_stats_playerid_eventid` UNIQUE (`player_id`, `event_id`);
 
@@ -187,5 +190,19 @@ ALTER TABLE `karma_votes` ADD FOREIGN KEY (`player_id`) REFERENCES `tm_players` 
 
 -- +goose Down
 -- +goose StatementBegin
-
+SET FOREIGN_KEY_CHECKS=0; -- to disable them
+DROP TABLE IF EXISTS tm_players;
+DROP TABLE IF EXISTS maps;
+DROP TABLE IF EXISTS servers;
+DROP TABLE IF EXISTS user_metadata;
+DROP TABLE IF EXISTS finishes;
+DROP TABLE IF EXISTS web_users;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS event_finishes;
+DROP TABLE IF EXISTS world_records;
+DROP TABLE IF EXISTS event_player_edition_stats;
+DROP TABLE IF EXISTS player_edition_stats;
+DROP TABLE IF EXISTS karma_votes;
+DROP TABLE IF EXISTS api_keys;
+SET FOREIGN_KEY_CHECKS=1; -- to re-enable them
 -- +goose StatementEnd

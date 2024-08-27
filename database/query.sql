@@ -59,3 +59,16 @@ SELECT tm_players.login, tm_players.nickname, finishes.score, finishes.finish_co
 JOIN tm_players ON tm_players.id = finishes.player_id
 WHERE finishes.map_uid = ?
 ORDER BY finishes.score ASC, finishes.last_improved_at ASC;
+
+
+-- name: CreateUpdateServer :exec
+INSERT INTO servers (
+  login, name, game_type, time_limit, current_map_info, next_maps
+) VALUES (
+  ?,?,?,?,?,?
+)
+ON DUPLICATE KEY UPDATE name=VALUES(name), time_limit=VALUES(time_limit), current_map_info=VALUES(current_map_info), next_maps=VALUES(next_maps);
+
+-- name: GetServers :many
+SELECT login, name, difficulty, time_limit, current_map_info, next_maps FROM servers
+WHERE game_type=? AND status=1;
