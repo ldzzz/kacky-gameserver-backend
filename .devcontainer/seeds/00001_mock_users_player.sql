@@ -5,19 +5,19 @@
 # tm_players mock
 */
 /*real players*/
-INSERT INTO tm_players (id, login, game_type, nickname, role) VALUES (1, "el-djinn", "KK", "el-djinn", "admin");
-INSERT INTO tm_players (id, login, game_type, nickname, role) VALUES (2, "3zrJPQyLTZKF2Mrkr-qUEw", "KR", "el-djinn", "admin");
+INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (1, "el-djinn", "KK", "World|Europe|Bosnia and Herzegovina", "el-djinn", "admin");
+INSERT INTO tm_players (id, login, game_type, zone, nickname, role) VALUES (2, "3zrJPQyLTZKF2Mrkr-qUEw", "KR", "World|Europe|Bosnia and Herzegovina", "el-djinn", "admin");
 /*fake players*/
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (10, "*fakeplayer1*", "KK", "player1");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (11, "*fakeplayer2*", "KK", "player2");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (12, "*fakeplayer3*", "KK", "player3");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (13, "*fakeplayer4*", "KK", "player4");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (14, "*fakeplayer5*", "KK", "player5");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (15, "*fakeplayer6*", "KR", "player6");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (16, "*fakeplayer7*", "KR", "player7");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (17, "*fakeplayer8*", "KR", "player8");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (18, "*fakeplayer9*", "KR", "player9");
-INSERT INTO tm_players (id, login, game_type, nickname) VALUES (19, "*fakeplayer10*", "KR", "player10");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (10, "*fakeplayer1*", "KK", "World|Europe|Testland", "player1");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (11, "*fakeplayer2*", "KK", "World|Europe|Testland", "player2");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (12, "*fakeplayer3*", "KK", "World|Europe|Testland", "player3");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (13, "*fakeplayer4*", "KK", "World|Europe|Testland", "player4");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (14, "*fakeplayer5*", "KK", "World|Europe|Testland", "player5");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (15, "*fakeplayer6*", "KR", "World|Europe|Testland", "player6");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (16, "*fakeplayer7*", "KR", "World|Europe|Testland", "player7");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (17, "*fakeplayer8*", "KR", "World|Europe|Testland", "player8");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (18, "*fakeplayer9*", "KR", "World|Europe|Testland", "player9");
+INSERT INTO tm_players (id, login, game_type, zone, nickname) VALUES (19, "*fakeplayer10*", "KR", "World|Europe|Testland",  "player10");
 
 /*
 # web_users mock

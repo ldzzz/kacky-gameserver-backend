@@ -53,7 +53,7 @@ func serverMapRecords(req micro.Request) {
 		return
 	}
 
-	var mapRecords []database.GetMapSortedRecordsRow
+	var mapRecords []*database.GetMapSortedRecordsRow
 	if mapRecords, err = config.ENV.DB.GetMapSortedRecords(context.Background(), sd.MapUid); err != nil && err != sql.ErrNoRows {
 		slog.Error("Couldn't retrieve map records", "error", err)
 		_ = req.RespondJSON(err)

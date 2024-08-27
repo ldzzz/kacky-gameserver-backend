@@ -2,7 +2,6 @@ package player
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -39,7 +38,7 @@ func playerConnect(req micro.Request) {
 	}
 
 	// insert player if it doesn't exist, else update nickname and zone on connect
-	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), db.CreateUpdatePlayerParams{Login: pd.Login, Nickname: sql.NullString{String: pd.Nickname, Valid: true}, Zone: sql.NullString{String: pd.Zone, Valid: true}, GameType: pd.GameType}); err != nil {
+	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), db.CreateUpdatePlayerParams{Login: pd.Login, Nickname: pd.Nickname, Zone: pd.Zone, GameType: pd.GameType}); err != nil {
 		slog.Error("Failed to create or update player", "error", err)
 		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
 		return
@@ -65,7 +64,7 @@ func playerSetNickname(req micro.Request) {
 	}
 
 	// update player nickname
-	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), db.CreateUpdatePlayerParams{Login: pd.Login, Nickname: sql.NullString{String: pd.Nickname, Valid: true}, GameType: pd.GameType}); err != nil {
+	if err = config.ENV.DB.CreateUpdatePlayer(context.Background(), db.CreateUpdatePlayerParams{Login: pd.Login, Nickname: pd.Nickname, GameType: pd.GameType}); err != nil {
 		slog.Error("Failed to create or update player nickname", "error", err)
 		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
 		return
@@ -148,7 +147,7 @@ func playerStreamStatus(req micro.Request) {
 	_ = req.RespondJSON(combinedPlayerData)
 }
 
-func playerFinish(req micro.Request) { //TODO: how to handle player ranks, and e.g. differences on PB and stuff ????
+func playerFinish(req micro.Request) {
 	var pd apihelpers.PlayerFinish
 	var err error
 
@@ -158,20 +157,21 @@ func playerFinish(req micro.Request) { //TODO: how to handle player ranks, and e
 	}
 
 	// process player finish data
-	if err = apihelpers.ProcessPlayerFinish(pd); err != nil {
+	var finishRankInfo *apihelpers.PlayerFinishInfo
+	if finishRankInfo, err = apihelpers.ProcessPlayerFinish(pd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
 
-	// return player metadata
-	var combinedPlayerData any
-	if combinedPlayerData, err = apihelpers.GetPlayerCombined(pd.Login, pd.GameType, true, true); err != nil {
+	// return player finish combined data
+	var combinedPlayerFinishData any
+	if combinedPlayerFinishData, err = apihelpers.GetPlayerFinishCombined(pd.Login, pd.GameType, finishRankInfo); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
 
-	slog.Debug(fmt.Sprintf("Request: %s\nResponse: %s", utils.PrettyPrint(pd), utils.PrettyPrint(combinedPlayerData)))
-	_ = req.RespondJSON(combinedPlayerData)
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse: %s", utils.PrettyPrint(pd), utils.PrettyPrint(combinedPlayerFinishData)))
+	_ = req.RespondJSON(combinedPlayerFinishData)
 }
 
 /*

@@ -22,10 +22,10 @@ ON DUPLICATE KEY UPDATE nickname=VALUES(nickname), zone=VALUES(zone)
 `
 
 type CreateUpdatePlayerParams struct {
-	Login    string         `json:"login"`
-	Nickname sql.NullString `json:"nickname"`
-	Zone     sql.NullString `json:"zone"`
-	GameType string         `json:"gameType"`
+	Login    string `json:"login"`
+	Nickname string `json:"nickname"`
+	Zone     string `json:"zone"`
+	GameType string `json:"gameType"`
 }
 
 func (q *Queries) CreateUpdatePlayer(ctx context.Context, arg CreateUpdatePlayerParams) error {
@@ -106,7 +106,7 @@ const fetchMapByUid = `-- name: FetchMapByUid :one
 SELECT id, map_uid, event_id, full_name, number, author, author_time, total_playtime, created_at, updated_at FROM maps WHERE map_uid = ?
 `
 
-func (q *Queries) FetchMapByUid(ctx context.Context, mapUid string) (Map, error) {
+func (q *Queries) FetchMapByUid(ctx context.Context, mapUid string) (*Map, error) {
 	row := q.queryRow(ctx, q.fetchMapByUidStmt, fetchMapByUid, mapUid)
 	var i Map
 	err := row.Scan(
@@ -121,7 +121,7 @@ func (q *Queries) FetchMapByUid(ctx context.Context, mapUid string) (Map, error)
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const fetchPlayerMapFinish = `-- name: FetchPlayerMapFinish :one
@@ -133,7 +133,7 @@ type FetchPlayerMapFinishParams struct {
 	PlayerID int64  `json:"playerId"`
 }
 
-func (q *Queries) FetchPlayerMapFinish(ctx context.Context, arg FetchPlayerMapFinishParams) (Finish, error) {
+func (q *Queries) FetchPlayerMapFinish(ctx context.Context, arg FetchPlayerMapFinishParams) (*Finish, error) {
 	row := q.queryRow(ctx, q.fetchPlayerMapFinishStmt, fetchPlayerMapFinish, arg.MapUid, arg.PlayerID)
 	var i Finish
 	err := row.Scan(
@@ -146,7 +146,7 @@ func (q *Queries) FetchPlayerMapFinish(ctx context.Context, arg FetchPlayerMapFi
 		&i.UpdatedAt,
 		&i.LastImprovedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getMapSortedRecords = `-- name: GetMapSortedRecords :many
@@ -158,19 +158,19 @@ ORDER BY finishes.score ASC, finishes.last_improved_at ASC
 
 type GetMapSortedRecordsRow struct {
 	Login          string    `json:"login"`
-	Nickname       *string   `json:"nickname"`
+	Nickname       string    `json:"nickname"`
 	Score          int32     `json:"score"`
 	FinishCounter  int32     `json:"finishCounter"`
 	LastImprovedAt time.Time `json:"lastImprovedAt"`
 }
 
-func (q *Queries) GetMapSortedRecords(ctx context.Context, mapUid string) ([]GetMapSortedRecordsRow, error) {
+func (q *Queries) GetMapSortedRecords(ctx context.Context, mapUid string) ([]*GetMapSortedRecordsRow, error) {
 	rows, err := q.query(ctx, q.getMapSortedRecordsStmt, getMapSortedRecords, mapUid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetMapSortedRecordsRow
+	var items []*GetMapSortedRecordsRow
 	for rows.Next() {
 		var i GetMapSortedRecordsRow
 		if err := rows.Scan(
@@ -182,7 +182,7 @@ func (q *Queries) GetMapSortedRecords(ctx context.Context, mapUid string) ([]Get
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -203,7 +203,7 @@ type GetPlayerParams struct {
 	GameType string `json:"gameType"`
 }
 
-func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (TmPlayer, error) {
+func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (*TmPlayer, error) {
 	row := q.queryRow(ctx, q.getPlayerStmt, getPlayer, arg.Login, arg.GameType)
 	var i TmPlayer
 	err := row.Scan(
@@ -219,7 +219,7 @@ func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (TmPlayer,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getPlayerFinishes = `-- name: GetPlayerFinishes :many
@@ -243,13 +243,13 @@ type GetPlayerFinishesRow struct {
 	LastImprovedAt time.Time `json:"lastImprovedAt"`
 }
 
-func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesParams) ([]GetPlayerFinishesRow, error) {
+func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesParams) ([]*GetPlayerFinishesRow, error) {
 	rows, err := q.query(ctx, q.getPlayerFinishesStmt, getPlayerFinishes, arg.Login, arg.GameType)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetPlayerFinishesRow
+	var items []*GetPlayerFinishesRow
 	for rows.Next() {
 		var i GetPlayerFinishesRow
 		if err := rows.Scan(
@@ -262,7 +262,7 @@ func (q *Queries) GetPlayerFinishes(ctx context.Context, arg GetPlayerFinishesPa
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -283,7 +283,7 @@ type GetPlayerMetadataParams struct {
 	TmnfPlayerID sql.NullInt64 `json:"tmnfPlayerId"`
 }
 
-func (q *Queries) GetPlayerMetadata(ctx context.Context, arg GetPlayerMetadataParams) (UserMetadatum, error) {
+func (q *Queries) GetPlayerMetadata(ctx context.Context, arg GetPlayerMetadataParams) (*UserMetadatum, error) {
 	row := q.queryRow(ctx, q.getPlayerMetadataStmt, getPlayerMetadata, arg.Tm20PlayerID, arg.TmnfPlayerID)
 	var i UserMetadatum
 	err := row.Scan(
@@ -298,7 +298,7 @@ func (q *Queries) GetPlayerMetadata(ctx context.Context, arg GetPlayerMetadataPa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const setPlayerRole = `-- name: SetPlayerRole :exec

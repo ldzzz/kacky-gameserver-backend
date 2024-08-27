@@ -44,7 +44,7 @@ CREATE TABLE `tm_players` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `login` VARCHAR(255) NOT NULL,
   `game_type` VARCHAR(255) NOT NULL,
-  `zone` VARCHAR(255),
+  `zone` VARCHAR(255) NOT NULL,
   `total_playtime` INT NOT NULL DEFAULT 0,
   `nickname` VARCHAR(255) NOT NULL,
   `role` VARCHAR(255) NOT NULL DEFAULT 'user',

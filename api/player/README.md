@@ -11,18 +11,16 @@ Currently, there are 4 distinct roles a user on the server can have, ordered fro
 - **Moderator** - set of Moderators with limited admin functionality
 - **Admin**     - set of Admins with full privileges
 
-This channel is covering generic routes that are of concern for {*User, Streamer*} roles.
-For routes of other roles, please refer to (TBD - admin channel).
+This channel is covering routes that are of concern for {*User, Streamer*} roles.<br>
+For routes of other roles, please refer to [`admin` channel](../admin/README.md).
 
 ## Routes
 
-Here is a short overview of what commands are currently supported by this channel.
-Detailed description of each route with examples can be found in their respective sections thereafter.
+Following routes are currently supported by this channel:
 
 - [`player.connect`](#playerconnect)
 - [`player.setName`](#playersetname)
 - [`player.finish`](#playerfinish)
-- [`player.addStreamer`](#playeraddstreamer)
 - [`player.setStreamStatus`](#playersetstreamstatus)
 
 ---
@@ -325,8 +323,14 @@ Error Response
 
 ### `player.finish`
 
-The route is called by gameserver controller whenever a player finishes a map. The backend will process and update relevant finish data and increment the finish counter of the player.
-The gameserver controller shall report status accordingly upon response reception (new finish, pb, non-pb).
+The route is called by gameserver controller whenever a player finishes a map. The backend will process and update relevant finish data and increment the finish counter of the player, as well as determine finish type, rank, and score and rank differences.
+At the moment the backend will categorize the finish into 3 different finish types:
+
+- `NewFinish` - The player finished the map for the first time, (`finishRankDifference`, `finishScoreDifference`) shall be ignored
+- `PersonalBest` - The player improved their map time, (`finishRankDifference`, `finishScoreDifference`) contain
+- `Finish` - The player finished again without improving their score, (`finishRankDifference`, `finishScoreDifference`) shall be ignored
+
+The gameserver controller can find all relevant finish metadata like type, rank, and (rank, score) differences in `finishInfo` field.
 
 <u>**Request**:</u>
 
@@ -356,6 +360,12 @@ The gameserver controller shall report status accordingly upon response receptio
    "createdAt":"datetime string iso8601 (UTC)",
    "updatedAt":"datetime string iso8601 (UTC)",
    "streamData":null,
+   "finishInfo": :{
+      "finishType":"string",
+      "finishRank":number,
+      "finishRankDifference":number,
+      "finishScoreDifference":number
+   },
    "records":[
       {
          "mapUId":"string",
@@ -431,6 +441,12 @@ Error Response
       "streamerLogin":"bla1",
       "streamStatus":true
    },
+   "finishInfo":{
+      "finishType":"Finish",
+      "finishRank":3,
+      "finishRankDifference":-1,
+      "finishScoreDifference":-1
+   },
    "records":[
       {
          "mapUid":"I7rI7jAga6C4tGAe5OTDoyLF2fh",
@@ -449,125 +465,6 @@ Error Response
          "lastImprovedAt":"2024-08-10T21:03:43Z"
       }
    ]
-}
-```
-
-</details>
-
-<details>
-  <summary>Response: Error</summary>
-
-```json
-{
-   "code": 500,
-   "message": "Internal Server Error
-}
-```
-
-</details>
-
----
-
-### `player.addStreamer`
-
-The route is called by gameserver controller whenever a player wants to update their nickname. The backend stores new nickname to database and responds with player metadata for consistency (without records).
-
-<u>**Request**:</u>
-
-```json
-{
-   "login":"string",
-   "gameType":"string",
-   "platform":"string",
-   "streamerLogin":"string",
-   "streamStatus":bool
-}
-```
-
-<u>**Response**</u>
-
-```json
-{
-   "id": number,
-   "login": "string",
-   "gameType": "string",
-   "zone": "string",
-   "totalPlaytime": number,
-   "nickname": "string",
-   "role": "string",
-   "isMuted": bool,
-   "isBlacklisted": bool,
-   "createdAt": "datetime string iso8601 (UTC)",
-   "updatedAt": "datetime string iso8601 (UTC)",
-   "streamData": {                          # or null if it doesn't exist
-      "platform": "string",
-      "streamerLogin": "string",
-      "streamStatus": bool
-   }
-}
-
--------------------------------------------------------------------------------
-
-Error Response
-{
-   "code": number,                  # HTTP error code (404, 400, 500, etc.)
-   "message": "Error message"
-}
-```
-
-#### <u>**Example responses**</u>
-
-<details>
-  <summary>Request: TMNF player</summary>
-
-```json
-{
-   "login":"el-djinn",
-   "gameType":"TmForever",
-   "platform":"twitch.tv",
-   "streamerLogin":"tekky",
-   "streamStatus":false,
-}
-```
-
-</details>
-
-<details>
-  <summary>Request: TM20 player</summary>
-
-```json
-{
-   "login":"3zrJPQyLTZKF2Mrkr-qUEw",
-   "gameType":"Trackmania",
-   "platform":"twitch.tv",
-   "streamerLogin":"tekky",
-   "streamStatus":false,
-}
-```
-
-</details>
-
-<details>
-  <summary>Response: Success</summary>
-
-```json
-{
-   "id":20,
-   "login":"el-djinn",
-   "gameType":"KK",
-   "zone":"World|Europe|Croatia",
-   "totalPlaytime":0,
-   "nickname":"el-djinn",
-   "role":"streamer",
-   "isMuted":false,
-   "isBlacklisted":false,
-   "createdAt":"2024-08-10T10:24:06Z",
-   "updatedAt":"2024-08-10T13:15:51Z",
-   "streamData":{
-      "platform":"twitch.tv",
-      "streamerLogin":"tekky",
-      "streamStatus":false
-   }
 }
 ```
 

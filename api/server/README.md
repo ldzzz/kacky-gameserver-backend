@@ -6,8 +6,7 @@
 
 ## Routes
 
-Here is a short overview of what commands are currently supported by this channel.
-Detailed description of each route with examples can be found in their respective sections thereafter.
+Following routes are currently supported by this channel:
 
 - [`server.mapStart`](#servermapstart)
 - [`server.mapEnd`](#servermapend)
@@ -21,9 +20,8 @@ Detailed description of each route with examples can be found in their respectiv
 
 ### `server.mapRecords`
 
-The route is called by gameserver controller whenever they want to obtain map records for a specific map.
-Backend expects a mapUID and in return it returns sorted records (lowest to highest score) and additionally sorts by date finished last,
-so that players who finished a map first are ordered above the ones that finished it later with the same score.
+The route is called by gameserver controller whenever it wants to obtain map records for a specific map.
+Backend expects a `mapUID` and in return it returns sorted records (lowest to highest score) and additionally sorts by date finished last, so that players who finished a map first are ordered above the ones that finished it later with the same score.
 
 <u>**Request**:</u>
 

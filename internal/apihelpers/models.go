@@ -29,6 +29,13 @@ type PlayerFinish struct {
 	Timestamp time.Time `json:"timestamp" validate:"required"`
 }
 
+type PlayerFinishInfo struct {
+	FinishType            string `json:"finishType"`
+	FinishRank            int    `json:"finishRank"`
+	FinishRankDifference  int    `json:"finishRankDifference"`
+	FinishScoreDifference int    `json:"finishScoreDifference"`
+}
+
 type PlayerStreamData struct {
 	Platform      *string `json:"platform"`
 	StreamerLogin *string `json:"streamerLogin"`
