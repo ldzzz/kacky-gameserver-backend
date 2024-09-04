@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"slices"
+	"time"
 
 	"github.com/ldzzz/kacky-gameserver-backend/config"
 	"github.com/ldzzz/kacky-gameserver-backend/database"
@@ -184,4 +185,33 @@ func GetPlayerFinishCombined(login string, gameType string, finishRankInfo *Play
 	}{fetchedPlayer, playerMetadata.StreamData, *finishRankInfo, playerFinishes}
 
 	return &combinedPlayerData, nil
+}
+
+func CalculateMapPlaytime(currentServerInfo ServerCurrentMapInfo, endMapInfo ServerCurrentMapEndInfo) (*int32, error) {
+	var playtime int32
+	var err error
+	var startStamp time.Time
+	var endStamp time.Time
+
+	if currentServerInfo.MapAuthor == endMapInfo.MapAuthor && currentServerInfo.MapAuthorTime == endMapInfo.MapAuthorTime && currentServerInfo.MapName == endMapInfo.MapName && currentServerInfo.MapNumber == endMapInfo.MapNumber && currentServerInfo.MapUid == endMapInfo.MapUid {
+		if startStamp, err = time.Parse(time.RFC3339, currentServerInfo.StartStamp); err != nil {
+			slog.Error("Unable to convert startStamp", "error", err)
+			return nil, &utils.RequestError{Code: 500, Message: "Internal Server Error"}
+		}
+		if endStamp, err = time.Parse(time.RFC3339, endMapInfo.EndStamp); err != nil {
+			slog.Error("Unable to convert endStamp", "error", err)
+			return nil, &utils.RequestError{Code: 500, Message: "Internal Server Error"}
+		}
+		playtime = int32(endStamp.Sub(startStamp).Minutes())
+	} else {
+		slog.Error("Current map and end map do not match", "error", err)
+		return nil, &utils.RequestError{Code: 400, Message: "Current map & end map data do not match"}
+	}
+
+	// just to be sure we don't have negative values
+	if playtime < 0 {
+		playtime = 0
+	}
+
+	return &playtime, nil
 }

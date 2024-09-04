@@ -68,6 +68,15 @@ type ServerCurrentMapInfo struct {
 	StartStamp    string `json:"startStamp" validate:"required"`
 }
 
+type ServerCurrentMapEndInfo struct {
+	MapUid        string `json:"mapUid" validate:"required"`
+	MapName       string `json:"mapName" validate:"required"`
+	MapNumber     int32  `json:"mapNumber" validate:"required"`
+	MapAuthor     string `json:"mapAuthor" validate:"required"`
+	MapAuthorTime int32  `json:"mapAuthorTime" validate:"required"`
+	EndStamp      string `json:"endStamp" validate:"required"`
+}
+
 type ServerNextMapInfo struct {
 	MapUid        string `json:"mapUid" validate:"required"`
 	MapName       string `json:"mapName" validate:"required"`
@@ -83,4 +92,11 @@ type ServerSync struct {
 	TimeLimit      int32                `json:"timeLimit" validate:"required,gt=0"`
 	CurrentMapInfo ServerCurrentMapInfo `json:"currentMapInfo" validate:"required"`
 	NextMaps       []string             `json:"nextMaps" validate:"required"`
+}
+
+type ServerMapEndSync struct {
+	ServerLogin    string                  `json:"serverLogin" validate:"required"`
+	ServerName     string                  `json:"serverName" validate:"required"`
+	GameType       string                  `json:"gameType" validate:"required,oneof=TmForever Trackmania Maniaplanet"`
+	CurrentMapInfo ServerCurrentMapEndInfo `json:"currentMapInfo" validate:"required"`
 }

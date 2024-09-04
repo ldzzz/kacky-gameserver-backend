@@ -333,6 +333,39 @@ func (q *Queries) GetPlayerMetadata(ctx context.Context, arg GetPlayerMetadataPa
 	return &i, err
 }
 
+const getServerByLogin = `-- name: GetServerByLogin :one
+SELECT login, name, difficulty, time_limit, current_map_info, next_maps FROM servers
+WHERE login=? AND game_type=?
+`
+
+type GetServerByLoginParams struct {
+	Login    string `json:"login"`
+	GameType string `json:"gameType"`
+}
+
+type GetServerByLoginRow struct {
+	Login          string          `json:"login"`
+	Name           string          `json:"name"`
+	Difficulty     int32           `json:"difficulty"`
+	TimeLimit      int32           `json:"timeLimit"`
+	CurrentMapInfo json.RawMessage `json:"currentMapInfo"`
+	NextMaps       json.RawMessage `json:"nextMaps"`
+}
+
+func (q *Queries) GetServerByLogin(ctx context.Context, arg GetServerByLoginParams) (*GetServerByLoginRow, error) {
+	row := q.queryRow(ctx, q.getServerByLoginStmt, getServerByLogin, arg.Login, arg.GameType)
+	var i GetServerByLoginRow
+	err := row.Scan(
+		&i.Login,
+		&i.Name,
+		&i.Difficulty,
+		&i.TimeLimit,
+		&i.CurrentMapInfo,
+		&i.NextMaps,
+	)
+	return &i, err
+}
+
 const getServers = `-- name: GetServers :many
 SELECT login, name, difficulty, time_limit, current_map_info, next_maps FROM servers
 WHERE game_type=? AND status=1
@@ -389,5 +422,19 @@ type SetPlayerRoleParams struct {
 
 func (q *Queries) SetPlayerRole(ctx context.Context, arg SetPlayerRoleParams) error {
 	_, err := q.exec(ctx, q.setPlayerRoleStmt, setPlayerRole, arg.Role, arg.Login, arg.GameType)
+	return err
+}
+
+const updateMapPlaytime = `-- name: UpdateMapPlaytime :exec
+UPDATE maps SET total_playtime=total_playtime+? WHERE map_uid=?
+`
+
+type UpdateMapPlaytimeParams struct {
+	TotalPlaytime int32  `json:"totalPlaytime"`
+	MapUid        string `json:"mapUid"`
+}
+
+func (q *Queries) UpdateMapPlaytime(ctx context.Context, arg UpdateMapPlaytimeParams) error {
+	_, err := q.exec(ctx, q.updateMapPlaytimeStmt, updateMapPlaytime, arg.TotalPlaytime, arg.MapUid)
 	return err
 }

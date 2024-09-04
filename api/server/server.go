@@ -21,12 +21,13 @@ func InitServices() {
 		Version: "1.0.0",
 	})
 	serverGroup := srv.AddGroup("server")
-	_ = serverGroup.AddEndpoint("mapStart", micro.HandlerFunc(serverMapStart))
-	_ = serverGroup.AddEndpoint("mapEnd", micro.HandlerFunc(serverMapEnd))
 	_ = serverGroup.AddEndpoint("mapRecords", micro.HandlerFunc(serverMapRecords))
+	_ = serverGroup.AddEndpoint("sync", micro.HandlerFunc(serverSync))
+	_ = serverGroup.AddEndpoint("mapEnd", micro.HandlerFunc(serverMapEnd))
+
+	_ = serverGroup.AddEndpoint("mapStart", micro.HandlerFunc(serverMapStart))
 	_ = serverGroup.AddEndpoint("mapSync", micro.HandlerFunc(serverMapSync))
 	_ = serverGroup.AddEndpoint("setDifficulty", micro.HandlerFunc(serverSetDifficulty))
-	_ = serverGroup.AddEndpoint("sync", micro.HandlerFunc(serverSync))
 	_ = serverGroup.AddEndpoint("leaderboard", micro.HandlerFunc(serverLeaderboard))
 
 	slog.Info(fmt.Sprintf("Initialized %s", srv.Info()))
@@ -111,6 +112,54 @@ func serverSync(req micro.Request) {
 	_ = req.RespondJSON(serverList)
 }
 
+func serverMapEnd(req micro.Request) {
+	var sd apihelpers.ServerMapEndSync
+	var err error
+
+	if err = utils.Deserialize(req.Data(), &sd); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// get current servers
+	var server *db.GetServerByLoginRow
+	if server, err = config.ENV.DB.GetServerByLogin(context.Background(), db.GetServerByLoginParams{Login: sd.ServerLogin, GameType: sd.GameType}); err != nil {
+		slog.Error("Unable to get a server by login", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	// check currentmapinfo same and calculate playtime (in minutes)
+	var currentMapInfo apihelpers.ServerCurrentMapInfo
+	if err = utils.Deserialize(server.CurrentMapInfo, &currentMapInfo); err != nil {
+		slog.Error("Unable to deserialize database currentMapInfo", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	var playtime *int32
+	if playtime, err = apihelpers.CalculateMapPlaytime(currentMapInfo, sd.CurrentMapInfo); err != nil {
+		_ = req.RespondJSON(err)
+		return
+	}
+
+	// update map playtime
+	if err = config.ENV.DB.UpdateMapPlaytime(context.Background(), database.UpdateMapPlaytimeParams{TotalPlaytime: *playtime, MapUid: sd.CurrentMapInfo.MapUid}); err != nil {
+		slog.Error("Couldn't add/update server", "error", err)
+		_ = req.RespondJSON(err)
+		return
+	}
+	// return mapdata with updated total_playtime
+	var mapData *db.Map
+	if mapData, err = config.ENV.DB.GetMapByUid(context.Background(), sd.CurrentMapInfo.MapUid); err != nil {
+		slog.Error("Unable to obtain map info", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse: %s", utils.PrettyPrint(sd), utils.PrettyPrint(mapData)))
+	_ = req.RespondJSON(mapData)
+}
+
 func serverMapSync(req micro.Request) {
 	var sd apihelpers.ServerLeaderboard
 	var err error
@@ -122,16 +171,6 @@ func serverMapSync(req micro.Request) {
 }
 
 func serverMapStart(req micro.Request) {
-	var sd apihelpers.ServerLeaderboard
-	var err error
-
-	if err = utils.Deserialize(req.Data(), &sd); err != nil {
-		_ = req.RespondJSON(err)
-		return
-	}
-}
-
-func serverMapEnd(req micro.Request) {
 	var sd apihelpers.ServerLeaderboard
 	var err error
 

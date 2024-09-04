@@ -72,3 +72,10 @@ ON DUPLICATE KEY UPDATE name=VALUES(name), time_limit=VALUES(time_limit), curren
 -- name: GetServers :many
 SELECT login, name, difficulty, time_limit, current_map_info, next_maps FROM servers
 WHERE game_type=? AND status=1;
+
+-- name: GetServerByLogin :one
+SELECT login, name, difficulty, time_limit, current_map_info, next_maps FROM servers
+WHERE login=? AND game_type=?;
+
+-- name: UpdateMapPlaytime :exec
+UPDATE maps SET total_playtime=total_playtime+? WHERE map_uid=?;

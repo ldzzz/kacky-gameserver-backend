@@ -129,8 +129,108 @@ TBD
 
 ### `server.mapEnd`
 
-TBD
+The route is called by gameserver controller whenever a maps' playtime is done and server is moving to the next map in the tracklist.
+The backend calculates current playtime and updates the database. It then returns the information of the updated map.
 
+<u>**Request**:</u>
+
+```json
+{
+   "serverLogin":"string",
+   "serverName":"string",
+   "gameType":"string",
+   "currentMapInfo":{
+      "mapUid":"string",
+      "mapName":"string",
+      "mapNumber":number,
+      "mapAuthor":"string", #author name
+      "mapAuthorTime":number, #milis
+      "endStamp":"datetime string iso8601 (UTC)"
+   }
+}
+```
+
+<u>**Response**</u>
+
+```json
+{
+   "id":number,
+   "mapUid":"string",
+   "eventId":number,
+   "fullName":"string",
+   "number":number,
+   "author":"string",
+   "authorTime":number,
+   "totalPlaytime":number,
+   "createdAt":"datetime string iso8601 (UTC)",
+   "updatedAt":"datetime string iso8601 (UTC)"
+}
+
+
+-------------------------------------------------------------------------------
+
+Error Response
+{
+   "code": number,                  # HTTP error code (404, 400, 500, etc.)
+   "message": "Error message"
+}
+
+```
+
+#### <u>**Example responses**</u>
+
+<details>
+  <summary>Request: Example</summary>
+
+```json
+{
+   "serverLogin":"server1",
+   "serverName":"White 1",
+   "gameType":"KK",
+   "currentMapInfo":{
+      "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+      "mapName":"Kackiest Kacky #123",
+      "mapNumber":123,
+      "mapAuthor":"djinn",
+      "mapAuthorTime":12345,
+      "endStamp":"2024-09-04T20:00:11.796735Z"
+   }
+}
+```
+
+</details>
+
+<details>
+  <summary>Response: Success</summary>
+
+```json
+{
+   "id":14,
+   "mapUid":"6ktPCqLADXXuy5LaOLTzktaGlKf",
+   "eventId":1,
+   "fullName":"A14-Race",
+   "number":14,
+   "author":"Nadeo",
+   "authorTime":22170,
+   "totalPlaytime":20,
+   "createdAt":"2024-09-04T19:50:02Z",
+   "updatedAt":"2024-09-04T19:50:11Z"
+}
+```
+
+</details>
+
+<details>
+  <summary>Response: Error</summary>
+
+```json
+{
+   "code": 500,
+   "message": "Internal Server Error
+}
+```
+
+</details>
 ---
 
 ### `server.mapSync`

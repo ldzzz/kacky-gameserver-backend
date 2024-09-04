@@ -57,11 +57,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getPlayerMetadataStmt, err = db.PrepareContext(ctx, getPlayerMetadata); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPlayerMetadata: %w", err)
 	}
+	if q.getServerByLoginStmt, err = db.PrepareContext(ctx, getServerByLogin); err != nil {
+		return nil, fmt.Errorf("error preparing query GetServerByLogin: %w", err)
+	}
 	if q.getServersStmt, err = db.PrepareContext(ctx, getServers); err != nil {
 		return nil, fmt.Errorf("error preparing query GetServers: %w", err)
 	}
 	if q.setPlayerRoleStmt, err = db.PrepareContext(ctx, setPlayerRole); err != nil {
 		return nil, fmt.Errorf("error preparing query SetPlayerRole: %w", err)
+	}
+	if q.updateMapPlaytimeStmt, err = db.PrepareContext(ctx, updateMapPlaytime); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateMapPlaytime: %w", err)
 	}
 	return &q, nil
 }
@@ -123,6 +129,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getPlayerMetadataStmt: %w", cerr)
 		}
 	}
+	if q.getServerByLoginStmt != nil {
+		if cerr := q.getServerByLoginStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getServerByLoginStmt: %w", cerr)
+		}
+	}
 	if q.getServersStmt != nil {
 		if cerr := q.getServersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getServersStmt: %w", cerr)
@@ -131,6 +142,11 @@ func (q *Queries) Close() error {
 	if q.setPlayerRoleStmt != nil {
 		if cerr := q.setPlayerRoleStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing setPlayerRoleStmt: %w", cerr)
+		}
+	}
+	if q.updateMapPlaytimeStmt != nil {
+		if cerr := q.updateMapPlaytimeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateMapPlaytimeStmt: %w", cerr)
 		}
 	}
 	return err
@@ -183,8 +199,10 @@ type Queries struct {
 	getPlayerFinishesStmt           *sql.Stmt
 	getPlayerMapFinishStmt          *sql.Stmt
 	getPlayerMetadataStmt           *sql.Stmt
+	getServerByLoginStmt            *sql.Stmt
 	getServersStmt                  *sql.Stmt
 	setPlayerRoleStmt               *sql.Stmt
+	updateMapPlaytimeStmt           *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -202,7 +220,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getPlayerFinishesStmt:           q.getPlayerFinishesStmt,
 		getPlayerMapFinishStmt:          q.getPlayerMapFinishStmt,
 		getPlayerMetadataStmt:           q.getPlayerMetadataStmt,
+		getServerByLoginStmt:            q.getServerByLoginStmt,
 		getServersStmt:                  q.getServersStmt,
 		setPlayerRoleStmt:               q.setPlayerRoleStmt,
+		updateMapPlaytimeStmt:           q.updateMapPlaytimeStmt,
 	}
 }
