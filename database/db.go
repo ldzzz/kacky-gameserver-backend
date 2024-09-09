@@ -69,6 +69,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateMapPlaytimeStmt, err = db.PrepareContext(ctx, updateMapPlaytime); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMapPlaytime: %w", err)
 	}
+	if q.updateServerTimeLimitStmt, err = db.PrepareContext(ctx, updateServerTimeLimit); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateServerTimeLimit: %w", err)
+	}
 	return &q, nil
 }
 
@@ -149,6 +152,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateMapPlaytimeStmt: %w", cerr)
 		}
 	}
+	if q.updateServerTimeLimitStmt != nil {
+		if cerr := q.updateServerTimeLimitStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateServerTimeLimitStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -203,6 +211,7 @@ type Queries struct {
 	getServersStmt                  *sql.Stmt
 	setPlayerRoleStmt               *sql.Stmt
 	updateMapPlaytimeStmt           *sql.Stmt
+	updateServerTimeLimitStmt       *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -224,5 +233,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getServersStmt:                  q.getServersStmt,
 		setPlayerRoleStmt:               q.setPlayerRoleStmt,
 		updateMapPlaytimeStmt:           q.updateMapPlaytimeStmt,
+		updateServerTimeLimitStmt:       q.updateServerTimeLimitStmt,
 	}
 }

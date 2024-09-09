@@ -100,3 +100,15 @@ type ServerMapEndSync struct {
 	GameType       string                  `json:"gameType" validate:"required,oneof=TmForever Trackmania Maniaplanet"`
 	CurrentMapInfo ServerCurrentMapEndInfo `json:"currentMapInfo" validate:"required"`
 }
+
+type ServerTimeLimit struct {
+	ServerLogin string `json:"serverLogin" validate:"required"`
+	GameType    string `json:"gameType" validate:"required,oneof=TmForever Trackmania Maniaplanet"`
+	TimeLimit   int    `json:"timeLimit" validate:"required,gt=0"`
+}
+
+type AdminChangeRole struct {
+	Login    string `json:"login" validate:"required"`
+	GameType string `json:"gameType" validate:"required,oneof=TmForever Trackmania Maniaplanet"`
+	Role     string `json:"role" validate:"required,oneof=user admin moderator"`
+}

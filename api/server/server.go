@@ -8,7 +8,6 @@ import (
 	"log/slog"
 
 	"github.com/ldzzz/kacky-gameserver-backend/config"
-	"github.com/ldzzz/kacky-gameserver-backend/database"
 	db "github.com/ldzzz/kacky-gameserver-backend/database"
 	"github.com/ldzzz/kacky-gameserver-backend/internal/apihelpers"
 	"github.com/ldzzz/kacky-gameserver-backend/internal/utils"
@@ -24,8 +23,8 @@ func InitServices() {
 	_ = serverGroup.AddEndpoint("mapRecords", micro.HandlerFunc(serverMapRecords))
 	_ = serverGroup.AddEndpoint("sync", micro.HandlerFunc(serverSync))
 	_ = serverGroup.AddEndpoint("mapEnd", micro.HandlerFunc(serverMapEnd))
+	_ = serverGroup.AddEndpoint("setTimeLimit", micro.HandlerFunc(serverTimeLimit))
 
-	_ = serverGroup.AddEndpoint("mapStart", micro.HandlerFunc(serverMapStart))
 	_ = serverGroup.AddEndpoint("mapSync", micro.HandlerFunc(serverMapSync))
 	_ = serverGroup.AddEndpoint("setDifficulty", micro.HandlerFunc(serverSetDifficulty))
 	_ = serverGroup.AddEndpoint("leaderboard", micro.HandlerFunc(serverLeaderboard))
@@ -43,7 +42,7 @@ func serverMapRecords(req micro.Request) {
 	}
 
 	// get map records by uid (sorted)
-	var mapRecords []*database.GetMapSortedRecordsRow
+	var mapRecords []*db.GetMapSortedRecordsRow
 	if mapRecords, err = config.ENV.DB.GetMapSortedRecords(context.Background(), sd.MapUid); err != nil && err != sql.ErrNoRows {
 		slog.Error("Couldn't retrieve map records", "error", err)
 		_ = req.RespondJSON(err)
@@ -93,7 +92,7 @@ func serverSync(req micro.Request) {
 	}
 
 	// store to db
-	if err = config.ENV.DB.CreateUpdateServer(context.Background(), database.CreateUpdateServerParams{Login: sd.ServerLogin, Name: sd.ServerName, GameType: sd.GameType, TimeLimit: sd.TimeLimit, CurrentMapInfo: currentMapInfoData, NextMaps: nextMapsDataSerialized}); err != nil {
+	if err = config.ENV.DB.CreateUpdateServer(context.Background(), db.CreateUpdateServerParams{Login: sd.ServerLogin, Name: sd.ServerName, GameType: sd.GameType, TimeLimit: sd.TimeLimit, CurrentMapInfo: currentMapInfoData, NextMaps: nextMapsDataSerialized}); err != nil {
 		slog.Error("Couldn't add/update server", "error", err)
 		_ = req.RespondJSON(err)
 		return
@@ -144,7 +143,7 @@ func serverMapEnd(req micro.Request) {
 	}
 
 	// update map playtime
-	if err = config.ENV.DB.UpdateMapPlaytime(context.Background(), database.UpdateMapPlaytimeParams{TotalPlaytime: *playtime, MapUid: sd.CurrentMapInfo.MapUid}); err != nil {
+	if err = config.ENV.DB.UpdateMapPlaytime(context.Background(), db.UpdateMapPlaytimeParams{TotalPlaytime: *playtime, MapUid: sd.CurrentMapInfo.MapUid}); err != nil {
 		slog.Error("Couldn't add/update server", "error", err)
 		_ = req.RespondJSON(err)
 		return
@@ -160,17 +159,36 @@ func serverMapEnd(req micro.Request) {
 	_ = req.RespondJSON(mapData)
 }
 
-func serverMapSync(req micro.Request) {
-	var sd apihelpers.ServerLeaderboard
+func serverTimeLimit(req micro.Request) {
+	var sd apihelpers.ServerTimeLimit
 	var err error
 
 	if err = utils.Deserialize(req.Data(), &sd); err != nil {
 		_ = req.RespondJSON(err)
 		return
 	}
+
+	// update time limit
+	if err = config.ENV.DB.UpdateServerTimeLimit(context.Background(), db.UpdateServerTimeLimitParams{Login: sd.ServerLogin, GameType: sd.GameType, TimeLimit: int32(sd.TimeLimit)}); err != nil {
+		slog.Error("Unable to update server time limit by login", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	// return server updated data
+	var server *db.GetServerByLoginRow
+	if server, err = config.ENV.DB.GetServerByLogin(context.Background(), db.GetServerByLoginParams{Login: sd.ServerLogin, GameType: sd.GameType}); err != nil {
+		slog.Error("Unable to get server by login", "error", err)
+		_ = req.RespondJSON(&utils.RequestError{Code: 500, Message: "Internal Server Error"})
+		return
+	}
+
+	// return updated server data
+	slog.Debug(fmt.Sprintf("Request: %s\nResponse: %s", utils.PrettyPrint(sd), utils.PrettyPrint(server)))
+	_ = req.RespondJSON(server)
 }
 
-func serverMapStart(req micro.Request) {
+func serverMapSync(req micro.Request) {
 	var sd apihelpers.ServerLeaderboard
 	var err error
 

@@ -7,7 +7,6 @@
 Currently, there are 4 distinct roles a user on the server can have, ordered from least to most privileged:
 
 - **User**      - every player joining the server automatically obtains this role
-- **Streamer**  - every player that has a stream data added by {*Moderator, Admin*} obtains this role
 - **Moderator** - set of Moderators with limited admin functionality
 - **Admin**     - set of Admins with full privileges
 

@@ -79,3 +79,6 @@ WHERE login=? AND game_type=?;
 
 -- name: UpdateMapPlaytime :exec
 UPDATE maps SET total_playtime=total_playtime+? WHERE map_uid=?;
+
+-- name: UpdateServerTimeLimit :exec
+UPDATE servers SET time_limit=? WHERE login=? AND game_type=?;

@@ -438,3 +438,18 @@ func (q *Queries) UpdateMapPlaytime(ctx context.Context, arg UpdateMapPlaytimePa
 	_, err := q.exec(ctx, q.updateMapPlaytimeStmt, updateMapPlaytime, arg.TotalPlaytime, arg.MapUid)
 	return err
 }
+
+const updateServerTimeLimit = `-- name: UpdateServerTimeLimit :exec
+UPDATE servers SET time_limit=? WHERE login=? AND game_type=?
+`
+
+type UpdateServerTimeLimitParams struct {
+	TimeLimit int32  `json:"timeLimit"`
+	Login     string `json:"login"`
+	GameType  string `json:"gameType"`
+}
+
+func (q *Queries) UpdateServerTimeLimit(ctx context.Context, arg UpdateServerTimeLimitParams) error {
+	_, err := q.exec(ctx, q.updateServerTimeLimitStmt, updateServerTimeLimit, arg.TimeLimit, arg.Login, arg.GameType)
+	return err
+}
